@@ -13,28 +13,36 @@
   header .dot{width:14px;height:14px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 3px rgba(194,152,61,.28)}
   header h1{font-size:15px;margin:0;font-weight:900}
   header .who{margin-left:auto;font-size:12px;color:var(--muted);display:flex;gap:10px;align-items:center}
-  .link{background:none;border:none;color:var(--primary2);cursor:pointer;font-size:12px;font-weight:700}
+  .link{background:none;border:none;color:var(--primary2);cursor:pointer;font-size:12px;font-weight:700;text-decoration:none}
   .layout{display:flex;height:calc(100vh - 45px);min-height:480px}
   .stage{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
   .bar{display:flex;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
   .btn{background:var(--primary);color:#252425;border:none;border-radius:10px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer}
   .btn:hover{background:var(--primary2)}
   .btn.on{background:transparent;border:1.5px solid var(--line);color:var(--muted)}
+  .btn.on.active{border-color:var(--primary);color:var(--primary2)}
+  .btn.add.arm{background:var(--green);color:#22301f}
+  /* zoom toolbar */
+  .zwrap{display:none;align-items:center;gap:6px}
+  .zbtn{padding:7px 11px;font-size:13px;line-height:1}
+  .zlabel{min-width:52px;text-align:center;font-size:12.5px;color:var(--text);font-weight:700}
+  .pageind{font-size:12px;color:var(--muted);font-weight:700;margin-left:2px}
+  /* page column (custom PDF.js renderer) */
   .pages{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px;background:#1b1a1c}
-  .pages.viewer{padding:0;display:block;overflow:hidden;min-height:70vh}
+  .pages.viewer{padding:0;display:block;overflow:hidden;min-height:70vh}   /* native-reader fallback */
   #viewer{width:100%;height:100%;min-height:70vh;border:0;display:block;background:#fff}
-  .pdf-page{position:relative;box-shadow:0 6px 24px rgba(0,0,0,.5);border-radius:4px;overflow:hidden;background:#fff}
+  .pdf-page{position:relative;box-shadow:0 6px 24px rgba(0,0,0,.5);border-radius:4px;overflow:hidden;background:#fff;max-width:100%}
   .pdf-page canvas{display:block}
   .pdf-page.commenting{cursor:crosshair}
-  .pdf-page.loading{background:#eceee8}
+  .pdf-page.loading{min-height:120px;background:#eceee8}
   .pdf-page.loading::after{content:'Rendering…';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#6f6a5b;font-size:12px}
-  .pdf-page.failed{background:#f7ecea}
-  .pdf-page.failed::after{content:'Could not render this page';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#b64a33;font-size:12px}
   .spin{display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:8px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .players{position:absolute;inset:0;pointer-events:none}
-  .pin{position:absolute;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50% 50% 50% 3px;background:var(--primary);color:#252425;border:2px solid #eceee8;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+  .pin{position:absolute;transform:translate(-50%,-100%);width:26px;height:26px;border-radius:50% 50% 50% 3px;background:var(--primary);color:#252425;border:2px solid #eceee8;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto;box-shadow:0 2px 8px rgba(0,0,0,.5)}
   .pin.done{background:var(--green);color:#2f3a34;border-color:#2f3a34}
+  .pin.flash{animation:pinflash 2.2s ease-out}
+  @keyframes pinflash{0%,40%{box-shadow:0 0 0 4px var(--primary2)}100%{box-shadow:0 2px 8px rgba(0,0,0,.5)}}
   .side{width:340px;flex:none;border-left:1px solid var(--line);background:var(--surf);display:flex;flex-direction:column}
   .side-h{padding:14px 16px;border-bottom:1px solid var(--line);font-weight:900;font-size:14px;display:flex;justify-content:space-between}
   .list{flex:1;overflow:auto;padding:8px 10px}
@@ -89,7 +97,15 @@
 <div class="layout">
   <div class="stage">
     <div class="bar">
-      <button class="btn" id="addBtn" onclick="openComposer()">+ Add comment</button>
+      <button class="btn add" id="addBtn" onclick="startCommenting()">+ Add comment</button>
+      <span class="zwrap" id="zoomWrap">
+        <button class="btn on zbtn" title="Zoom out" onclick="zoomBy(-1)">&minus;</button>
+        <span class="zlabel" id="zLabel">100%</span>
+        <button class="btn on zbtn" title="Zoom in" onclick="zoomBy(1)">+</button>
+        <button class="btn on zbtn" id="zWidth" onclick="setZoomMode('width')">Fit width</button>
+        <button class="btn on zbtn" id="zPage" onclick="setZoomMode('page')">Fit page</button>
+        <span class="pageind" id="pageInd"></span>
+      </span>
       <span id="verWrap" style="display:none;align-items:center;gap:6px">
         <span style="font-size:12px;color:var(--muted);font-weight:700">Version</span>
         <select id="verSel" class="btn ghost" style="padding:8px 10px;cursor:pointer" onchange="switchVersion(this.value)"></select>
@@ -100,7 +116,8 @@
         <button class="btn ghost" onclick="setReviewStatus('approved')">Approve</button>
       </span>
       <span id="verNote" style="display:none;color:#F0C36D;font-size:12.5px;font-weight:700"></span>
-      <span id="hint" style="color:var(--muted);font-size:13px">Add a comment to a page. Click any comment to jump to its page.</span>
+      <a id="openOrig" class="link" target="_blank" rel="noopener" style="font-size:12px">Open original &#8599;</a>
+      <span id="hint" style="color:var(--muted);font-size:13px">Click <b>+ Add comment</b>, then click the spot on the page you're commenting on.</span>
     </div>
     <div class="pages" id="pages"><div class="empty" style="margin:auto">Loading PDF…</div></div>
   </div>
@@ -112,12 +129,12 @@
 </div>
 <div class="pop" id="pop">
   <div id="popReplyTo" class="pgtag" style="margin-bottom:8px;display:none">Replying to <b id="popReplyName"></b></div>
+  <div id="popPin" class="pgtag" style="margin-bottom:8px;display:none">Pinned to <b><span id="popPinPg"></span></b></div>
   <div id="popPgRow" class="pgtag" style="margin-bottom:8px">Comment on page
     <input id="popPg" type="number" min="1" value="1" style="width:64px;display:inline-block;padding:5px 7px;margin-left:6px">
     <span id="popOf" class="ago"></span>
   </div>
-  <div id="popTip" style="font-size:11px;color:var(--muted);margin:0 0 8px">Tip: the current page number is shown at the top of the PDF viewer.</div>
-  <textarea id="ta" placeholder="What needs to change on this page?"></textarea>
+  <textarea id="ta" placeholder="What needs to change here?"></textarea>
   <div class="pop-a"><button class="btn on" onclick="closePop()">Cancel</button><button class="btn" id="popPost" onclick="postComment()">Post</button></div>
 </div>
 <div class="scrim" id="scrim">
@@ -134,7 +151,7 @@
 <script>
 var SUPA_URL=window.APP.supabaseUrl;
 var SUPA_KEY=window.APP.supabaseKey;
-var PROXY=window.APP.proxyUrl;   // used to fetch the PDF with CORS
+var PROXY=window.APP.proxyUrl;   // used to fetch Drive/Docs bytes with CORS
 var H={apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json'};
 var params=new URLSearchParams(location.search);
 var SRC=params.get('v')||''; var NAME=params.get('name')||'';
@@ -171,106 +188,278 @@ function toFetchUrl(src){
   }
   return src; // already a direct .pdf link
 }
-// Native-viewer approach: fetch the bytes, hand them to the browser's own PDF
-// engine via a same-origin blob URL. This renders any PDF instantly — including
-// vector-dense design exports that the in-browser rasterizer (PDF.js) chokes on.
-// Comments are page-level (the native viewer doesn't expose click coordinates).
-var BLOB=null, NUMPAGES=0, curPage=1;
-// A Supabase Storage public URL already serves application/pdf and can be framed
-// directly, so the native viewer STREAMS it (fetches only the pages you view) —
-// no downloading the whole file. Big win for large uploads (e.g. 50 MB backdrops).
+// A Supabase Storage public URL serves application/pdf with permissive CORS, so
+// PDF.js can stream it directly (range requests). Drive/Docs need the proxy.
 function directFrameable(u){ return /\/storage\/v1\/object\/public\//.test(u||'') && !/drive\.|docs\.google/.test(u||''); }
+
+// ============================================================================
+//  PDF rendering — we render pages ourselves with PDF.js into <canvas> so we
+//  own the zoom (fit-width / fit-page / +/-) and can drop pins anywhere on a
+//  page. If PDF.js can't load or a page fails to rasterize (some vector-dense
+//  design exports), we fall back to the browser's native reader for that file
+//  (page-level comments only, exactly like before).
+// ============================================================================
+var pdfDoc=null, NUMPAGES=0, curPage=1, PAGE_VP1=null;
+var scale=1, zoomMode='width';          // 'width' | 'page' | 'custom'
+var NATIVE=false, BLOB=null;            // native-reader fallback state
+var COMMENTING=false, pendingAnchor=null;
+var DPR=Math.min(window.devicePixelRatio||1, 2);
+var ZMIN=0.25, ZMAX=6;
+
 async function loadPdf(){
   var host=$('pages');
+  NATIVE=false; BLOB=null; pdfDoc=null; NUMPAGES=0; curPage=1; PAGE_VP1=null;
+  setCommenting(false);
   host.classList.remove('viewer');
   host.innerHTML='<div class="empty" style="margin:auto"><span class="spin"></span>Loading PDF…</div>';
-  if(directFrameable(SRC)){
-    BLOB=SRC; NUMPAGES=0; curPage=1;               // native viewer streams straight from the URL
-    host.classList.add('viewer');
-    host.innerHTML='<iframe id="viewer" title="PDF" src="'+esc(SRC)+'#page=1&zoom=page-width"></iframe>';
-    $('popOf').textContent='';
-    maybeFocus();
-    return;
-  }
-  // Fallback (Drive/Docs + other links): fetch bytes through the proxy and hand
-  // the browser a blob — needed for URL conversion, CORS, and octet-stream fixes.
+  $('zoomWrap').style.display='none';
   try{
-    var resp=await fetch(PROXY+'?url='+encodeURIComponent(toFetchUrl(SRC)));
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    var buf=await resp.arrayBuffer();
-    // Metadata only (fast — parse, no rasterize) to learn the page count. Give
-    // PDF.js a COPY, since it transfers/detaches the buffer to its worker.
-    try{ var pdf=await pdfjsLib.getDocument({data:buf.slice(0)}).promise; NUMPAGES=pdf.numPages; }catch(e){ NUMPAGES=0; }
-    BLOB=URL.createObjectURL(new Blob([buf],{type:'application/pdf'}));
-    host.classList.add('viewer');
-    host.innerHTML='<iframe id="viewer" title="PDF" src="'+BLOB+'#page=1&zoom=page-width"></iframe>';
-    curPage=1;
-    $('popOf').textContent=NUMPAGES?('of '+NUMPAGES):'';
-    if(NUMPAGES) $('popPg').max=NUMPAGES;
-    maybeFocus();
-  }catch(err){ host.classList.remove('viewer'); host.innerHTML='<div class="empty" style="margin:auto">Could not load the PDF.<br>For a Google Drive file, set it to <b>“Anyone with the link · Viewer”</b> and paste the normal share link.<br>Direct <b>.pdf</b> links also work.<br><span style="font-size:11px">'+esc(String(err))+'</span></div>'; }
+    var task;
+    if(directFrameable(SRC)){
+      try{ task=pdfjsLib.getDocument({url:SRC}); pdfDoc=await task.promise; }
+      catch(e){ pdfDoc=await getViaProxy(); }     // CORS/range hiccup → bytes via proxy
+    } else {
+      pdfDoc=await getViaProxy();                  // Drive/Docs/other → bytes via proxy
+    }
+    NUMPAGES=pdfDoc.numPages;
+    var p1=await pdfDoc.getPage(1); PAGE_VP1=p1.getViewport({scale:1});
+    $('popPg').max=NUMPAGES;
+    await renderAll();
+    $('zoomWrap').style.display='inline-flex';
+  }catch(err){
+    goNative(err);
+  }
 }
+async function getViaProxy(){
+  var resp=await fetch(PROXY+'?url='+encodeURIComponent(toFetchUrl(SRC)));
+  if(!resp.ok) throw new Error('HTTP '+resp.status);
+  var buf=await resp.arrayBuffer();
+  return pdfjsLib.getDocument({data:buf}).promise;
+}
+function computeScale(){
+  var host=$('pages'); if(!PAGE_VP1) return;
+  var cw=Math.max(120, host.clientWidth-40), ch=Math.max(120, host.clientHeight-40);
+  if(zoomMode==='width') scale=cw/PAGE_VP1.width;
+  else if(zoomMode==='page') scale=Math.min(cw/PAGE_VP1.width, ch/PAGE_VP1.height);
+  if(!isFinite(scale)||scale<=0) scale=1;
+  scale=Math.min(ZMAX, Math.max(ZMIN, scale));
+}
+var IO=null, RENDER_SEQ=0;
+// Build sized placeholders for every page instantly (so the scrollbar, zoom
+// controls and page indicator are correct right away), then rasterize each page
+// lazily as it nears the viewport — the way a real PDF viewer works. Avoids
+// rendering a 50-page deck up front.
+function renderAll(){
+  var host=$('pages'); host.classList.remove('viewer');
+  if(IO){ IO.disconnect(); IO=null; }
+  var myseq=++RENDER_SEQ;
+  computeScale();
+  host.innerHTML='';
+  var approxW=Math.floor(PAGE_VP1.width*scale), approxH=Math.floor(PAGE_VP1.height*scale);
+  for(var i=1;i<=NUMPAGES;i++){
+    var wrap=document.createElement('div'); wrap.className='pdf-page loading'; wrap.setAttribute('data-pg',i);
+    wrap.style.width=approxW+'px'; wrap.style.height=approxH+'px';
+    var players=document.createElement('div'); players.className='players'; wrap.appendChild(players);
+    (function(w,n){ w.addEventListener('click', function(e){ onPageClick(e,n,w); }); })(wrap,i);
+    host.appendChild(wrap);
+  }
+  updateZoomLabel(); updatePageIndicator(); renderPins();
+  IO=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting){ IO.unobserve(en.target); renderPageInto(en.target, parseInt(en.target.getAttribute('data-pg'),10), myseq); } });
+  }, {root:host, rootMargin:'800px 0px'});
+  host.querySelectorAll('.pdf-page').forEach(function(w){ IO.observe(w); });
+}
+async function renderPageInto(wrap, num, myseq){
+  if(wrap.getAttribute('data-rendered')==='1') return;
+  wrap.setAttribute('data-rendered','1');
+  try{
+    var page=await pdfDoc.getPage(num);
+    if(myseq!==RENDER_SEQ) return;                 // superseded by a newer zoom/resize render
+    var vp=page.getViewport({scale:scale});
+    wrap.style.width=Math.floor(vp.width)+'px'; wrap.style.height=Math.floor(vp.height)+'px';
+    var canvas=document.createElement('canvas');
+    canvas.width=Math.floor(vp.width*DPR); canvas.height=Math.floor(vp.height*DPR);
+    canvas.style.width=Math.floor(vp.width)+'px'; canvas.style.height=Math.floor(vp.height)+'px';
+    wrap.insertBefore(canvas, wrap.firstChild);
+    await page.render({canvasContext:canvas.getContext('2d'), viewport:page.getViewport({scale:scale*DPR})}).promise;
+    if(myseq!==RENDER_SEQ) return;
+    wrap.classList.remove('loading');
+    renderPins();
+  }catch(e){
+    goNative(e);                                    // a page we can't rasterize → native reader for this file
+  }
+}
+function setZoomMode(m){ if(NATIVE) return; zoomMode=m; renderAll(); }
+function zoomBy(dir){ if(NATIVE||!PAGE_VP1) return; if(zoomMode!=='custom') computeScale(); zoomMode='custom'; scale=Math.min(ZMAX,Math.max(ZMIN, scale*Math.pow(1.2,dir))); renderAll(); }
+function updateZoomLabel(){
+  $('zLabel').textContent=Math.round(scale*100)+'%';
+  $('zWidth').classList.toggle('active', zoomMode==='width');
+  $('zPage').classList.toggle('active', zoomMode==='page');
+}
+function updatePageIndicator(){ $('pageInd').textContent=NUMPAGES?('Page '+curPage+' / '+NUMPAGES):''; }
+
+// Native browser reader — fallback for files PDF.js can't render.
+function goNative(err){
+  NATIVE=true; pdfDoc=null; setCommenting(false);
+  $('zoomWrap').style.display='none';
+  var host=$('pages'); host.classList.add('viewer');
+  host.innerHTML='<div class="empty" style="margin:auto"><span class="spin"></span>Loading PDF…</div>';
+  if(directFrameable(SRC)){
+    BLOB=SRC; NUMPAGES=NUMPAGES||0; curPage=1;
+    host.innerHTML='<iframe id="viewer" title="PDF" src="'+esc(SRC)+'#page=1&zoom=page-width"></iframe>';
+    $('hint').textContent='Showing the browser PDF reader for this file. Use “+ Add comment” to note a page.';
+    maybeFocus(); return;
+  }
+  fetch(PROXY+'?url='+encodeURIComponent(toFetchUrl(SRC)))
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.arrayBuffer(); })
+    .then(function(buf){
+      try{ pdfjsLib.getDocument({data:buf.slice(0)}).promise.then(function(pdf){ NUMPAGES=pdf.numPages; $('popPg').max=NUMPAGES; updatePageIndicator(); }); }catch(e){}
+      BLOB=URL.createObjectURL(new Blob([buf],{type:'application/pdf'})); curPage=1;
+      host.innerHTML='<iframe id="viewer" title="PDF" src="'+BLOB+'#page=1&zoom=page-width"></iframe>';
+      $('hint').textContent='Showing the browser PDF reader for this file. Use “+ Add comment” to note a page.';
+      maybeFocus();
+    })
+    .catch(function(e){ host.classList.remove('viewer'); host.innerHTML='<div class="empty" style="margin:auto">Could not load the PDF.<br>For a Google Drive file, set it to <b>“Anyone with the link · Viewer”</b> and paste the normal share link.<br>Direct <b>.pdf</b> links also work.<br><span style="font-size:11px">'+esc(String(err||e))+'</span></div>'; });
+}
+
+// ---- navigation ----
 function jumpToPage(pg){
-  pg=parseInt(pg,10)||1; curPage=pg;
-  var v=$('viewer'); if(v && BLOB) v.src=BLOB+'#page='+pg+'&zoom=page-width';
+  pg=parseInt(pg,10)||1; curPage=pg; updatePageIndicator();
+  if(NATIVE){ var v=$('viewer'); if(v && BLOB) v.src=BLOB+'#page='+pg+'&zoom=page-width'; return; }
+  var el=document.querySelector('.pdf-page[data-pg="'+pg+'"]');
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+// Track the most-visible page as the user scrolls (drives the composer default + indicator).
+(function(){
+  var host=$('pages'); var raf=null;
+  host.addEventListener('scroll',function(){
+    if(NATIVE||raf) return;
+    raf=requestAnimationFrame(function(){
+      raf=null;
+      var pages=host.querySelectorAll('.pdf-page'); if(!pages.length) return;
+      var top=host.getBoundingClientRect().top, best=1, bestD=1e9;
+      pages.forEach(function(p){ var d=Math.abs(p.getBoundingClientRect().top-top); if(d<bestD){bestD=d;best=parseInt(p.getAttribute('data-pg'),10)||1;} });
+      if(best!==curPage){ curPage=best; updatePageIndicator(); }
+    });
+  });
+})();
+// Refit on resize when in a fit mode.
+(function(){ var t=null; window.addEventListener('resize',function(){ if(NATIVE||zoomMode==='custom'||!pdfDoc) return; clearTimeout(t); t=setTimeout(renderAll,180); }); })();
+
+// ---- commenting ----
+function setCommenting(on){
+  COMMENTING=!!on;
+  $('addBtn').classList.toggle('arm', COMMENTING);
+  $('addBtn').textContent=COMMENTING?'Click a spot on the page…':'+ Add comment';
+  document.querySelectorAll('.pdf-page').forEach(function(p){ p.classList.toggle('commenting', COMMENTING); });
+}
+function startCommenting(){
+  if(!getEmail()){ askIdentity(); return; }
+  if(NATIVE){ openComposer(); return; }             // native reader → page-level composer
+  setCommenting(!COMMENTING);
+}
+function onPageClick(e, num, wrap){
+  if(!COMMENTING) return;
+  if(!getEmail()){ askIdentity(); return; }
+  var rect=wrap.getBoundingClientRect();
+  var x=(e.clientX-rect.left)/rect.width, y=(e.clientY-rect.top)/rect.height;
+  x=Math.min(1,Math.max(0,x)); y=Math.min(1,Math.max(0,y));
+  pendingAnchor={type:'pdf',pg:num,x:x,y:y,tx:'p.'+num};
+  setCommenting(false);
+  openComposerAt(e.clientX, e.clientY, num);
 }
 var replyTo=null;
+function placePop(cx, cy){
+  var pop=$('pop'); pop.classList.add('show');
+  var w=300, h=pop.offsetHeight||190, pad=12;
+  var left=Math.min(Math.max(pad, cx+14), window.innerWidth-w-pad);
+  var top =Math.min(Math.max(pad, cy-10), window.innerHeight-h-pad);
+  pop.style.left=left+'px'; pop.style.top=top+'px';
+}
+function openComposerAt(cx, cy, pg){
+  replyTo=null; pending=true;
+  $('popReplyTo').style.display='none';
+  $('popPin').style.display=''; $('popPinPg').textContent='page '+pg;
+  $('popPgRow').style.display='none';
+  $('popPost').textContent='Post'; $('ta').placeholder='What needs to change here?';
+  placePop(cx, cy);
+  $('ta').value=''; $('ta').focus();
+}
+// Page-level composer (used in native fallback, or as a no-pin option).
 function openComposer(){
   if(!getEmail()){ askIdentity(); return; }
-  replyTo=null; pending=true;
-  $('popReplyTo').style.display='none'; $('popPgRow').style.display=''; $('popTip').style.display='';
-  $('popPost').textContent='Post'; $('ta').placeholder='What needs to change on this page?';
+  replyTo=null; pending=true; pendingAnchor=null;
+  $('popReplyTo').style.display='none'; $('popPin').style.display='none';
+  $('popPgRow').style.display=''; $('popPost').textContent='Post';
+  $('ta').placeholder='What needs to change on this page?';
   $('popPg').value=curPage||1; $('popOf').textContent=NUMPAGES?('of '+NUMPAGES):'';
-  var pop=$('pop'); pop.classList.add('show');
-  pop.style.left='24px'; pop.style.top='118px';
+  var pop=$('pop'); pop.classList.add('show'); pop.style.left='24px'; pop.style.top='118px';
   $('ta').value=''; $('ta').focus();
 }
 function openReply(id){
   if(!getEmail()){ askIdentity(); return; }
   var c=DATA.filter(function(x){return String(x.id)===String(id);})[0]; if(!c) return;
-  replyTo=id; pending=true;
+  replyTo=id; pending=true; pendingAnchor=null;
   $('popReplyTo').style.display=''; $('popReplyName').textContent=c.author||'comment';
-  $('popPgRow').style.display='none'; $('popTip').style.display='none';
+  $('popPin').style.display='none'; $('popPgRow').style.display='none';
   $('popPost').textContent='Reply'; $('ta').placeholder='Write a reply…';
-  var pop=$('pop'); pop.classList.add('show');
-  pop.style.left='24px'; pop.style.top='118px';
+  var pop=$('pop'); pop.classList.add('show'); pop.style.left='24px'; pop.style.top='118px';
   $('ta').value=''; $('ta').focus();
 }
 function postComment(){
   var body=$('ta').value.trim(); if(!body){ $('ta').focus(); return; }
   var c;
-  if(replyTo){ c={project:PROJECT,page:PAGE,author:author(),body:body,anchor:null,parent_id:replyTo,resolved:false}; }
-  else { var pg=parseInt($('popPg').value,10)||1; if(pg<1)pg=1; if(NUMPAGES&&pg>NUMPAGES)pg=NUMPAGES;
-    c={project:PROJECT,page:PAGE,author:author(),body:body,anchor:{type:'pdf',pg:pg,tx:'p.'+pg},parent_id:null,resolved:false}; }
+  if(replyTo){
+    c={project:PROJECT,page:PAGE,author:author(),body:body,anchor:null,parent_id:replyTo,resolved:false};
+  } else if(pendingAnchor){
+    c={project:PROJECT,page:PAGE,author:author(),body:body,anchor:pendingAnchor,parent_id:null,resolved:false};
+  } else {
+    var pg=parseInt($('popPg').value,10)||1; if(pg<1)pg=1; if(NUMPAGES&&pg>NUMPAGES)pg=NUMPAGES;
+    c={project:PROJECT,page:PAGE,author:author(),body:body,anchor:{type:'pdf',pg:pg,tx:'p.'+pg},parent_id:null,resolved:false};
+  }
   fetch(SUPA_URL+'/rest/v1/review_comments',{method:'POST',headers:Object.assign({Prefer:'return=minimal'},H),body:JSON.stringify([c])})
     .then(function(r){ if(!r.ok)throw new Error(r.status); closePop(); load(); })
     .catch(function(e){ alert('Could not post ('+e.message+').'); });
 }
-function closePop(){ $('pop').classList.remove('show'); pending=null; replyTo=null; }
+function closePop(){ $('pop').classList.remove('show'); pending=null; replyTo=null; pendingAnchor=null; }
 function repliesOf(id){ return DATA.filter(function(c){return String(c.parent_id)===String(id);}).sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at);}); }
+
 function load(){
   fetch(SUPA_URL+'/rest/v1/review_comments?project=eq.'+encodeURIComponent(PROJECT)+'&select=*&order=created_at.asc',{headers:H})
     .then(function(r){return r.ok?r.json():[];})
-    .then(function(rows){ DATA=rows||[]; renderList(); maybeFocus(); })
+    .then(function(rows){ DATA=rows||[]; renderList(); renderPins(); maybeFocus(); })
     .catch(function(){ $('list').innerHTML='<div class="empty">Could not load comments.</div>'; });
 }
-// Runs from both load() (needs DATA) and loadPdf() (needs the viewer). Fires once
-// whichever completes second; guards until both the comment and viewer are ready.
-function maybeFocus(){
-  if(!FOCUS) return;
-  var c=DATA.filter(function(x){return String(x.id)===String(FOCUS);})[0]; if(!c) return;
-  if(!BLOB) return;                           // viewer not ready yet; loadPdf will call again
-  var top=c.parent_id?(DATA.filter(function(x){return String(x.id)===String(c.parent_id);})[0]||c):c;
-  FOCUS='';                                   // one-shot
-  jumpToPage((top.anchor&&top.anchor.pg)||1);
-  var node=document.getElementById('c-'+top.id);
-  if(node){ node.classList.add('flash'); }
-}
-function renderList(){
+// The canonical top-level comment order — shared by the list and the pins so the
+// number on a pin matches the number in the sidebar.
+function orderedParents(){
   var parents=DATA.filter(function(c){return !c.parent_id;});
   parents.sort(function(a,b){ var pa=(a.anchor&&a.anchor.pg||0),pb=(b.anchor&&b.anchor.pg||0); return pa-pb || (a.anchor&&a.anchor.y||0)-(b.anchor&&b.anchor.y||0); });
+  return parents;
+}
+function renderPins(){
+  if(NATIVE) return;
+  document.querySelectorAll('.players').forEach(function(p){ p.innerHTML=''; });
+  orderedParents().forEach(function(c,i){
+    var a=c.anchor||{}; if(!a.pg || a.x==null) return;   // only precisely-pinned comments get a pin
+    var host=document.querySelector('.pdf-page[data-pg="'+a.pg+'"] .players'); if(!host) return;
+    var pin=document.createElement('div'); pin.className='pin'+(c.resolved?' done':''); pin.id='pin-'+c.id;
+    pin.style.left=(a.x*100)+'%'; pin.style.top=(a.y*100)+'%';
+    pin.textContent=c.resolved?'✓':(i+1); pin.title=(c.author||'')+' — '+(c.body||'').slice(0,80);
+    pin.onclick=function(ev){ ev.stopPropagation(); flashComment(c.id); };
+    host.appendChild(pin);
+  });
+}
+function flashComment(id){
+  var c=DATA.filter(function(x){return String(x.id)===String(id);})[0]; if(!c) return;
+  if(c.anchor&&c.anchor.pg) jumpToPage(c.anchor.pg);
+  var pin=$('pin-'+id); if(pin){ pin.classList.remove('flash'); void pin.offsetWidth; pin.classList.add('flash'); }
+  var node=$('c-'+id); if(node){ node.classList.remove('flash'); void node.offsetWidth; node.classList.add('flash'); node.scrollIntoView({block:'nearest'}); }
+}
+function renderList(){
+  var parents=orderedParents();
   $('count').textContent=parents.length+' comment'+(parents.length===1?'':'s');
-  if(!parents.length){ $('list').innerHTML='<div class="empty">No comments yet. Click <b>+ Add comment</b>, choose the page, and leave a note.</div>'; return; }
+  if(!parents.length){ $('list').innerHTML='<div class="empty">No comments yet. Click <b>+ Add comment</b>, then click the spot on the page you’re commenting on.</div>'; return; }
   $('list').innerHTML=parents.map(function(c,i){ var a=c.anchor||{}; var mine=c.author===author();
     var reps=repliesOf(c.id);
     var repHtml=reps.map(function(r){ var rmine=r.author===author();
@@ -278,8 +467,9 @@ function renderList(){
         +'<div class="cmt-body">'+esc(r.body)+'</div>'
         +(rmine?'<div class="cmt-actions"><button class="link" onclick="event.stopPropagation();delc(\''+r.id+'\')">delete</button></div>':'')+'</div>';
     }).join('');
-    return '<div class="cmt'+(c.resolved?' done':'')+'" id="c-'+c.id+'" onclick="jumpToPage('+(a.pg||1)+')">'
-      +'<div class="cmt-top"><span class="badge">'+(c.resolved?'✓':(i+1))+'</span><span class="pgtag">Page '+(a.pg||'?')+'</span><span class="ago">'+ago(c.created_at)+'</span></div>'
+    var pinNote=(a.x!=null?' · pinned':'');
+    return '<div class="cmt'+(c.resolved?' done':'')+'" id="c-'+c.id+'" onclick="flashComment(\''+c.id+'\')">'
+      +'<div class="cmt-top"><span class="badge">'+(c.resolved?'✓':(i+1))+'</span><span class="pgtag">Page '+(a.pg||'?')+pinNote+'</span><span class="ago">'+ago(c.created_at)+'</span></div>'
       +'<div class="who-n">'+esc(c.author)+'</div><div class="cmt-body">'+esc(c.body)+'</div>'
       +repHtml
       +'<div class="cmt-actions" onclick="event.stopPropagation()">'
@@ -290,12 +480,23 @@ function renderList(){
 }
 function tog(id,v){ fetch(SUPA_URL+'/rest/v1/review_comments?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({resolved:v})}).then(load); }
 function delc(id){ if(!confirm('Delete this comment?'))return; fetch(SUPA_URL+'/rest/v1/review_comments?id=eq.'+id,{method:'DELETE',headers:H}).then(load); }
+
+// Runs from both load() (needs DATA) and the viewer (needs pages/iframe). Fires
+// once whichever completes second; guards until both are ready.
+function maybeFocus(){
+  if(!FOCUS) return;
+  var c=DATA.filter(function(x){return String(x.id)===String(FOCUS);})[0]; if(!c) return;
+  if(!NATIVE && !document.querySelector('.pdf-page')) return;   // custom viewer not ready
+  if(NATIVE && !BLOB) return;                                    // native viewer not ready
+  var top=c.parent_id?(DATA.filter(function(x){return String(x.id)===String(c.parent_id);})[0]||c):c;
+  FOCUS='';                                                      // one-shot
+  jumpToPage((top.anchor&&top.anchor.pg)||1);
+  setTimeout(function(){ flashComment(top.id); }, 350);
+}
+
 // ---- review status (approve / request changes) ----
-// Keyed by project (= the PDF's URL). No-ops gracefully if this file isn't a
-// library review or the status column doesn't exist yet.
 function renderStatus(s){ var el=$('revStatus'); if(!el)return; s=s||'in_review'; el.style.display=''; el.className='statustag '+s; el.textContent=(s==='approved'?'Approved':s==='changes'?'Changes requested':'In review'); }
 function statusWord(s){ return s==='approved'?'Approved':s==='changes'?'Changes':'In review'; }
-// Resolve this file's review + its version list, then wire up the version switcher.
 async function initVersions(){
   var ORIG=SRC, rev=null;
   try{ rev=(await fetch(SUPA_URL+'/rest/v1/reviews?project=eq.'+encodeURIComponent(ORIG)+'&select=id,status,current_v&limit=1',{headers:H}).then(function(r){return r.ok?r.json():[];}))[0]; }catch(e){}
