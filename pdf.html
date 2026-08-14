@@ -28,10 +28,11 @@
   .zlabel{min-width:52px;text-align:center;font-size:12.5px;color:var(--text);font-weight:700}
   .pageind{font-size:12px;color:var(--muted);font-weight:700;margin-left:2px}
   /* page column (custom PDF.js renderer) */
-  .pages{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px;background:#1b1a1c}
-  .pages.viewer{padding:0;display:block;overflow:hidden;min-height:70vh}   /* native-reader fallback */
+  .pages{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;align-items:center;align-items:safe center;gap:18px;background:#1b1a1c;cursor:grab}
+  .pages.grabbing,.pages.grabbing *{cursor:grabbing !important}
+  .pages.viewer{padding:0;display:block;overflow:hidden;min-height:70vh;cursor:default}   /* native-reader fallback */
   #viewer{width:100%;height:100%;min-height:70vh;border:0;display:block;background:#fff}
-  .pdf-page{position:relative;box-shadow:0 6px 24px rgba(0,0,0,.5);border-radius:4px;overflow:hidden;background:#fff;max-width:100%}
+  .pdf-page{position:relative;box-shadow:0 6px 24px rgba(0,0,0,.5);border-radius:4px;overflow:hidden;background:#fff;flex:none}
   .pdf-page canvas{display:block}
   .pdf-page.commenting{cursor:crosshair}
   .pdf-page.loading{min-height:120px;background:#eceee8}
@@ -202,7 +203,7 @@ function directFrameable(u){ return /\/storage\/v1\/object\/public\//.test(u||''
 var pdfDoc=null, NUMPAGES=0, curPage=1, PAGE_VP1=null;
 var scale=1, zoomMode='width';          // 'width' | 'page' | 'custom'
 var NATIVE=false, BLOB=null;            // native-reader fallback state
-var COMMENTING=false, pendingAnchor=null;
+var COMMENTING=false, pendingAnchor=null, suppressClick=false;
 var DPR=Math.min(window.devicePixelRatio||1, 2);
 var ZMIN=0.02, ZMAX=6;   // floor must stay tiny so fit-width works for large-format art (banners/backdrops)
 
@@ -343,6 +344,26 @@ function jumpToPage(pg){
     });
   });
 })();
+// Drag-to-pan the zoomed page (grab cursor). A drag pans the scroll container;
+// a plain click still falls through to onPageClick (place a pin). Works whether
+// or not you're in commenting mode.
+(function(){
+  var host=$('pages'); var on=false, sx=0, sy=0, sl=0, st=0, moved=false;
+  host.addEventListener('mousedown', function(e){
+    if(NATIVE || e.button!==0) return;
+    on=true; moved=false; sx=e.clientX; sy=e.clientY; sl=host.scrollLeft; st=host.scrollTop;
+  });
+  window.addEventListener('mousemove', function(e){
+    if(!on) return;
+    var dx=e.clientX-sx, dy=e.clientY-sy;
+    if(!moved && (Math.abs(dx)+Math.abs(dy))>4){ moved=true; host.classList.add('grabbing'); }
+    if(moved){ host.scrollLeft=sl-dx; host.scrollTop=st-dy; e.preventDefault(); }
+  });
+  window.addEventListener('mouseup', function(){
+    if(!on) return; on=false; host.classList.remove('grabbing');
+    if(moved){ suppressClick=true; setTimeout(function(){ suppressClick=false; }, 0); }  // don't drop a pin at drag-end
+  });
+})();
 // Refit on resize when in a fit mode.
 (function(){ var t=null; window.addEventListener('resize',function(){ if(NATIVE||zoomMode==='custom'||!pdfDoc) return; clearTimeout(t); t=setTimeout(renderAll,180); }); })();
 
@@ -359,6 +380,7 @@ function startCommenting(){
   setCommenting(!COMMENTING);
 }
 function onPageClick(e, num, wrap){
+  if(suppressClick) return;                 // this "click" was the end of a pan drag
   if(!COMMENTING) return;
   if(!getEmail()){ askIdentity(); return; }
   var rect=wrap.getBoundingClientRect();
