@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review Studio — Setup & Dashboard</title>
+<style>
+  :root{--navy:#282e2a;--red:#e8482b;--blue:#c2983d;--ink:#454f48;--line:#d8dad0;--bg:#f1f0ea}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--navy);background:var(--bg)}
+  header{background:var(--navy);color:#fff;padding:22px 32px;display:flex;align-items:center;gap:12px}
+  header .dot{width:20px;height:20px;border-radius:50%;background:conic-gradient(var(--red),var(--blue),var(--navy))}
+  header h1{font-size:19px;margin:0;font-weight:700}
+  .wrap{max-width:1000px;margin:0 auto;padding:28px 24px 80px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:22px}
+  h2{font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  .step{width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;font-size:13px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+  .sub{color:var(--ink);font-size:13.5px;margin:2px 0 16px;line-height:1.5}
+  label{display:block;font-size:12px;font-weight:700;color:var(--ink);margin:12px 0 5px;text-transform:uppercase;letter-spacing:.03em}
+  input[type=text]{width:100%;border:1px solid #c2ccc5;border-radius:9px;padding:10px 12px;font-size:14px;font-family:inherit}
+  input:focus{outline:none;border-color:var(--blue)}
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .row>div{flex:1 1 280px}
+  .hint{font-size:12px;color:#928a74;margin-top:4px}
+  .bm{display:inline-block;background:var(--red);color:#fff !important;text-decoration:none;padding:12px 22px;border-radius:26px;font-weight:700;font-size:15px;box-shadow:0 6px 18px rgba(232,72,43,.35);cursor:grab}
+  .bm:active{cursor:grabbing}
+  .btn{background:var(--navy);color:#fff;border:none;border-radius:9px;padding:10px 16px;font-weight:700;font-size:13px;cursor:pointer}
+  .btn.ghost{background:#eceee8;color:var(--ink)}
+  .btn.red{background:var(--red)}
+  .pill{display:inline-block;background:#eceee8;border-radius:20px;padding:3px 10px;font-size:12px;color:var(--ink);margin-left:6px}
+  .instr{background:var(--bg);border-radius:10px;padding:14px 16px;font-size:13.5px;line-height:1.6;color:var(--ink)}
+  .instr b{color:var(--navy)}
+  code{background:#eceee8;padding:1px 6px;border-radius:5px;font-size:12.5px}
+  .status{font-size:12.5px;margin-top:10px}
+  .ok{color:#2fa36b}.warn{color:#c47b00}.err{color:var(--red)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  th{text-align:left;color:#928a74;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:2px solid var(--line)}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr.done td{opacity:.55}
+  .tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+  .tag.open{background:#fde8e3;color:var(--red)}
+  .tag.res{background:#e3f4ec;color:#2fa36b}
+  .filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 4px}
+  .tab{border:none;background:#eceee8;color:var(--ink);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer}
+  .tab.on{background:var(--navy);color:#fff}
+  .muted{color:#928a74;font-size:13px;padding:20px 4px;text-align:center}
+  .grp{font-weight:700;font-size:13px;color:var(--navy);margin:16px 0 2px;padding-top:8px}
+</style>
+</head>
+<body>
+<header><span class="dot"></span><h1>Review Studio</h1><span class="pill">setup &amp; dashboard</span></header>
+<div class="wrap">
+
+  <div class="card">
+    <h2><span class="step">1</span> Connect shared storage</h2>
+    <div class="sub">Paste the two values from your Supabase project (<b>Settings ▸ API</b>). They’re saved in this browser only. Leave blank to run in <b>local-only</b> mode (comments stay on one machine — good for a quick solo test).</div>
+    <div class="row">
+      <div><label>Supabase Project URL</label><input id="sbUrl" type="text" placeholder="https://xxxxxxxx.supabase.co"><div class="hint">e.g. https://abcdefgh.supabase.co</div></div>
+      <div><label>Supabase anon public key</label><input id="sbKey" type="text" placeholder="eyJhbGciOi..."><div class="hint">the long “anon / public” key</div></div>
+    </div>
+    <div class="row">
+      <div><label>Project name (label for this review)</label><input id="proj" type="text" value="my-site"></div>
+      <div><label>Overlay script URL</label><input id="scriptUrl" type="text" placeholder="https://xxxx.supabase.co/storage/v1/object/public/review/review-overlay.js"><div class="hint">Where <code>review-overlay.js</code> is hosted (Supabase Storage “review” bucket, or a CDN URL).</div></div>
+    </div>
+    <div style="margin-top:14px"><button class="btn" onclick="saveCfg()">Save &amp; build bookmarklet</button> <button class="btn ghost" onclick="autoScriptUrl()">Auto-fill script URL from project</button></div>
+    <div class="status" id="cfgStatus"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">2</span> Get the review button</h2>
+    <div class="sub"><b>Drag</b> the red button below up to your bookmarks bar. (If the bar is hidden: <code>⌘⇧B</code> on Mac / <code>Ctrl⇧B</code> on Windows.) Then send your team the instructions underneath.</div>
+    <p><a class="bm" id="bm" href="#">💬 Add a comment</a></p>
+    <div style="margin:8px 0 16px"><button class="btn ghost" onclick="copyBm()">Copy bookmarklet code</button> <span class="status" id="copyStatus"></span></div>
+    <div class="instr">
+      <b>Share this with reviewers:</b><br>
+      1. Drag the “💬 Add a comment” button to your bookmarks bar (one time).<br>
+      2. Open the site you're reviewing<br>
+      3. Click the <b>💬 Add a comment</b> bookmark. A panel appears top-right.<br>
+      4. Enter your email, hit <b>+ Add comment</b>, then click any element or text and type your note.<br>
+      5. Everyone’s comments sync automatically — reply and mark items resolved right on the page.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">3</span> All feedback <span class="pill" id="count">—</span></h2>
+    <div class="sub">Live view of everything the team has left, grouped by page. <button class="btn ghost" onclick="load()">Refresh</button> <button class="btn ghost" onclick="exportCsv()">Export CSV</button></div>
+    <div class="filters">
+      <button class="tab on" data-f="open" onclick="setF('open')">Open</button>
+      <button class="tab" data-f="all" onclick="setF('all')">All</button>
+      <button class="tab" data-f="resolved" onclick="setF('resolved')">Resolved</button>
+    </div>
+    <div id="board"><div class="muted">Connect Supabase above, then hit Refresh.</div></div>
+  </div>
+
+</div>
+
+<script src="config.js"></script>
+<script>
+var CFG = JSON.parse(localStorage.getItem('idr_admin_cfg') || 'null') || {
+  url: window.APP.supabaseUrl, key: window.APP.supabaseKey,
+  project: 'my-site', scriptUrl: window.APP.overlayUrl
+};
+var DATA = [], FILTER = 'open';
+
+function $(id){return document.getElementById(id);}
+function projectRef(url){ try{ return new URL(url).hostname.split('.')[0]; }catch(e){ return ''; } }
+function autoScriptUrl(){
+  var u=$('sbUrl').value.trim();
+  if(!u){ $('cfgStatus').innerHTML='<span class="err">Enter the Project URL first.</span>'; return; }
+  $('scriptUrl').value = u.replace(/\/+$/,'') + '/storage/v1/object/public/review/review-overlay.js';
+}
+function loadCfgToForm(){
+  $('sbUrl').value=CFG.url||''; $('sbKey').value=CFG.key||'';
+  $('proj').value=CFG.project||'my-site';
+  $('scriptUrl').value=CFG.scriptUrl||'';
+  buildBm();
+}
+function saveCfg(){
+  CFG={ url:$('sbUrl').value.trim().replace(/\/+$/,''), key:$('sbKey').value.trim(),
+        project:$('proj').value.trim()||'my-site', scriptUrl:$('scriptUrl').value.trim() };
+  localStorage.setItem('idr_admin_cfg', JSON.stringify(CFG));
+  buildBm();
+  var msgs=[];
+  msgs.push(CFG.url&&CFG.key ? '<span class="ok">● Shared storage connected.</span>' : '<span class="warn">○ Local-only mode (no Supabase keys).</span>');
+  if(!CFG.scriptUrl) msgs.push('<span class="warn">Add the Overlay script URL so the bookmarklet can load.</span>');
+  $('cfgStatus').innerHTML=msgs.join(' &nbsp; ');
+  load();
+}
+function buildBm(){
+  var cfgObj = { project: CFG.project||'my-site' };
+  if(CFG.url && CFG.key){ cfgObj.url=CFG.url; cfgObj.key=CFG.key; }
+  var src = CFG.scriptUrl || 'REPLACE_WITH_SCRIPT_URL';
+  var code = "javascript:(function(){window.IDR_CONFIG="+JSON.stringify(cfgObj)+";var d=document,s=d.createElement('script');s.src="+JSON.stringify(src)+"+((("+JSON.stringify(src)+").indexOf('?')<0)?'?':'&')+'v='+Date.now();d.body.appendChild(s);})();";
+  var a=$('bm'); a.href=code; a.dataset.code=code;
+}
+function copyBm(){
+  navigator.clipboard.writeText($('bm').dataset.code||'').then(function(){
+    $('copyStatus').innerHTML='<span class="ok">Copied.</span>';
+  });
+}
+
+// ---- dashboard ----
+function setF(f){ FILTER=f; [].forEach.call(document.querySelectorAll('.tab'),function(t){t.classList.toggle('on',t.dataset.f===f);}); render(); }
+function load(){
+  if(!(CFG.url&&CFG.key)){ $('board').innerHTML='<div class="muted">Local-only mode: comments live in each reviewer’s browser and can’t be aggregated here. Connect Supabase to see everyone’s feedback.</div>'; $('count').textContent='—'; return; }
+  $('board').innerHTML='<div class="muted">Loading…</div>';
+  fetch(CFG.url+'/rest/v1/review_comments?project=eq.'+encodeURIComponent(CFG.project)+'&select=*&order=created_at.asc',
+        {headers:{apikey:CFG.key,Authorization:'Bearer '+CFG.key}})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(rows){ DATA=rows; render(); })
+    .catch(function(e){ $('board').innerHTML='<div class="muted err">Could not load ('+e.message+'). Check the URL/key and that you ran the SQL setup.</div>'; });
+}
+function render(){
+  var parents=DATA.filter(function(c){return !c.parent_id;});
+  var shown=parents.filter(function(c){ return FILTER==='all'?true:FILTER==='open'?!c.resolved:c.resolved; });
+  $('count').textContent=parents.length+' comments';
+  if(!shown.length){ $('board').innerHTML='<div class="muted">No '+FILTER+' comments.</div>'; return; }
+  var byPage={}; shown.forEach(function(c){ (byPage[c.page]=byPage[c.page]||[]).push(c); });
+  var html='';
+  Object.keys(byPage).sort().forEach(function(pg){
+    html+='<div class="grp">'+esc(pg)+'</div><table><thead><tr><th>Status</th><th>Comment</th><th>Where</th><th>By</th><th>When</th></tr></thead><tbody>';
+    byPage[pg].forEach(function(c){
+      var reps=DATA.filter(function(r){return r.parent_id===c.id;});
+      var repHtml=reps.map(function(r){return '<div style="margin-top:5px;padding-left:10px;border-left:2px solid #c2ccc5;color:#6f6a5b"><b>'+esc(r.author)+':</b> '+esc(r.body)+'</div>';}).join('');
+      html+='<tr class="'+(c.resolved?'done':'')+'">'
+        +'<td><span class="tag '+(c.resolved?'res':'open')+'">'+(c.resolved?'Resolved':'Open')+'</span></td>'
+        +'<td>'+esc(c.body)+repHtml+'</td>'
+        +'<td style="max-width:180px;color:#928a74">'+esc((c.anchor&&c.anchor.tx)||'—').slice(0,70)+'</td>'
+        +'<td>'+esc(c.author)+'</td>'
+        +'<td style="white-space:nowrap;color:#928a74">'+new Date(c.created_at).toLocaleString()+'</td></tr>';
+    });
+    html+='</tbody></table>';
+  });
+  $('board').innerHTML=html;
+}
+function exportCsv(){
+  if(!DATA.length){ alert('Nothing to export yet.'); return; }
+  var rows=[['page','status','comment','element_text','author','created_at','is_reply']];
+  DATA.forEach(function(c){ rows.push([c.page, c.resolved?'resolved':'open', c.body, (c.anchor&&c.anchor.tx)||'', c.author, c.created_at, c.parent_id?'reply':'comment']); });
+  var csv=rows.map(function(r){return r.map(function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='review-export.csv'; a.click();
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
+
+loadCfgToForm();
+if(CFG.url&&CFG.key) load();
+</script>
+</body>
+</html>

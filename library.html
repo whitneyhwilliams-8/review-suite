@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review Studio</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--bg:#303d38;--surf:#252425;--surf2:#302f2c;--field:#2b2a27;--line:#46443d;--primary:#c2983d;--primary2:#d9b25a;--green:#81C784;--text:#eceee8;--muted:#928a74}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Lato',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--text);background:var(--bg)}
+  header{background:linear-gradient(135deg,#252425,#302f2c);color:#fff;padding:18px 32px;display:flex;flex-direction:column;align-items:stretch;gap:10px;border-bottom:1px solid var(--line)}
+  header .dot{width:16px;height:16px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 3px rgba(194,152,61,.28)}
+  header h1{font-size:17px;margin:0;font-weight:900}
+  header .spacer{flex:1}
+  .wrap{max-width:1080px;margin:0 auto;padding:26px 24px 90px}
+  .lead{color:var(--muted);font-size:14px;margin:2px 0 18px}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  .searchwrap{position:relative;flex:1;min-width:220px}
+  .searchwrap input{width:100%;background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;font-family:inherit}
+  .searchwrap input::placeholder{color:#6f6a5b}
+  .tab{border:none;background:rgba(194,152,61,.08);color:var(--muted);border-radius:20px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer}
+  .tab.on{background:#eceee8;color:#303d38}
+  .btn{background:var(--primary);color:#252425;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13.5px;cursor:pointer}
+  .btn:hover{background:var(--primary2)}
+  .btn.ghost{background:transparent;color:var(--text);border:1.5px solid var(--line)}
+  .btn.danger{background:transparent;color:#FF8A7A;border:1.5px solid rgba(255,138,122,.4)}
+  .btn.danger:hover{background:rgba(255,138,122,.12)}
+  .btn.ghost:hover{background:var(--surf2)}
+  .btn.sm{padding:7px 14px;font-size:12.5px;border-radius:9px}
+  /* new-review form */
+  .newform{display:none;background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:14px 0}
+  .newform.show{display:block}
+  .newform label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#c2ccc5;margin:0 0 5px}
+  .newform .fields{display:flex;gap:12px;flex-wrap:wrap}
+  .newform .f{flex:1;min-width:220px}
+  .newform input{width:100%;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:11px 13px;color:var(--text);font-size:14px;font-family:inherit}
+  .newform input::placeholder{color:#6f6a5b}
+  .newform .row{display:flex;gap:8px;margin-top:14px}
+  .err{color:#FF8A7A;font-size:13px;margin-top:8px}
+  .types{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .tchip{font-size:12px;color:var(--muted);background:rgba(194,152,61,.07);border:1px solid var(--line);border-radius:20px;padding:5px 11px}
+  .tchip b{color:#c2ccc5;font-weight:700}
+  .tchip.soon{opacity:.7;font-style:italic}
+  /* cards */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:14px}
+  .card{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s,transform .15s}
+  .card:hover{border-color:rgba(194,152,61,.5);transform:translateY(-2px)}
+  .ctop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .cname{font-size:16px;font-weight:900;color:#fff;line-height:1.2;word-break:break-word}
+  .ctag{flex:none;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:20px;background:rgba(194,152,61,.22);color:#cfa955;border:1px solid rgba(194,152,61,.4)}
+  .curl{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .counts{display:flex;gap:7px;flex-wrap:wrap}
+  .pill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+  .pill.open{background:#eceee8;color:#303d38}
+  .pill.res{background:#C8E6C9;color:#18551D}
+  .pill.none{background:rgba(194,152,61,.08);color:var(--muted)}
+  .statustag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+  .statustag.in_review{background:#eceee8;color:#303d38}
+  .statustag.changes{background:#FFF7E8;color:#7D570A}
+  .statustag.approved{background:#C8E6C9;color:#18551D}
+  .cmeta{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .cactions{display:flex;gap:8px;margin-top:6px}
+  .muted{color:var(--muted);text-align:center;padding:50px 10px;font-size:14px}
+  a.plain{text-decoration:none}
+  .htop{display:flex;align-items:center;gap:12px}
+  .topnav{display:flex;gap:24px}
+  .topnav a{font-size:14px;font-weight:700;color:#928a74;text-decoration:none;padding:4px 1px 3px;border-bottom:2px solid transparent}
+  .topnav a:hover{color:#fff}
+  .topnav a.on{color:#fff;border-bottom-color:var(--primary)}
+  .guide{display:flex;gap:10px;align-items:stretch;background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:6px 0 20px;position:relative;flex-wrap:wrap}
+  .gstep{flex:1;min-width:190px;display:flex;flex-direction:column;gap:3px}
+  .gstep .gn{width:22px;height:22px;border-radius:50%;background:var(--primary);color:#252425;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;margin-bottom:3px}
+  .gstep b{color:#fff;font-size:13.5px}
+  .gstep span:last-child{color:var(--muted);font-size:12.5px;line-height:1.45}
+  .garrow{display:flex;align-items:center;color:var(--muted);font-size:18px}
+  .gx{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer}
+  .gx:hover{color:#fff}
+  @media(max-width:760px){.garrow{display:none}.gstep{min-width:150px}}
+  /* collections */
+  .colls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:2px 0 16px}
+  .colls .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-right:2px}
+  .collchip{display:inline-flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--line);border-radius:20px;padding:6px 6px 6px 13px;font-size:12.5px;font-weight:700;color:#c2ccc5;cursor:pointer}
+  .collchip:hover{border-color:rgba(194,152,61,.5)}
+  .collchip.on{background:#eceee8;color:#303d38;border-color:#eceee8}
+  .collchip .n{font-weight:400;opacity:.75}
+  .collchip .cog{display:inline-flex;gap:4px}
+  .collchip .mini{background:rgba(194,152,61,.12);border:none;color:inherit;border-radius:12px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+  .collchip .mini:hover{background:rgba(194,152,61,.28)}
+  .collchip.on .mini{background:rgba(0,32,45,.12);color:#252425}
+  .collnew{background:transparent;border:1.5px dashed var(--line);color:var(--muted);border-radius:20px;padding:6px 14px;font-size:12.5px;font-weight:700;cursor:pointer}
+  .collnew:hover{color:#c2ccc5;border-color:rgba(194,152,61,.5)}
+  .mem{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .memchip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(194,152,61,.14);color:#cfa955;border:1px solid rgba(194,152,61,.4);border-radius:16px;padding:3px 5px 3px 9px}
+  .memchip button{background:none;border:none;color:inherit;cursor:pointer;font-size:13px;line-height:1;padding:0;opacity:.7}
+  .memchip button:hover{opacity:1}
+  .addcoll{background:var(--field);border:1px solid var(--line);color:var(--muted);border-radius:16px;padding:4px 8px;font-size:11.5px;font-family:inherit;cursor:pointer}
+  /* tags on collections + the tag filter strip */
+  .collchip .tg{font-size:9.5px;font-weight:800;letter-spacing:.02em;padding:2px 7px;border-radius:20px;text-transform:uppercase}
+  .collchip .tg.partner{background:rgba(194,152,61,.16);color:#d9b25a;border:1px solid rgba(194,152,61,.5)}
+  .collchip .tg.type{background:rgba(129,199,132,.16);color:#A8D8AB;border:1px solid rgba(129,199,132,.4)}
+  .collchip.on .tg{filter:brightness(.9)}
+  .tagbar{margin-top:-6px}
+  .tagbar .lbl2{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .fchip{font-size:11px;font-weight:800;padding:4px 11px;border-radius:20px;cursor:pointer;border:1px solid var(--line);background:transparent;color:#c2ccc5;font-family:inherit}
+  .fchip:hover{border-color:rgba(194,152,61,.5)}
+  .fchip.on.partner{background:rgba(194,152,61,.18);color:#c2ccc5;border-color:rgba(194,152,61,.7)}
+  .fchip.on.type{background:rgba(129,199,132,.18);color:#BFE4C1;border-color:rgba(129,199,132,.6)}
+  .fchip.on.status{background:#eceee8;color:#303d38;border-color:#eceee8}
+  .tagbar .sep{width:1px;height:18px;background:var(--line);margin:0 2px}
+  .tagbar .clr{background:none;border:none;color:var(--primary2);font-weight:700;font-size:11.5px;cursor:pointer;font-family:inherit}
+  /* --- unified shell: sidebar + main --- */
+  .shell{display:grid;grid-template-columns:262px 1fr;gap:18px;max-width:1220px;margin:0 auto;padding:16px 24px 90px;align-items:start}
+  .side{position:sticky;top:12px;display:flex;flex-direction:column;gap:14px;border:1px solid var(--line);border-radius:14px;background:var(--surf);padding:14px 12px}
+  .side .snav{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:2px 4px -4px}
+  .side #colls{flex-direction:column;align-items:stretch;gap:6px;margin:0}
+  .side #colls .lbl{display:none}
+  .side .collchip{width:100%;flex-wrap:wrap;justify-content:flex-start;border-radius:12px}
+  .side .collchip .cog{display:none;width:100%;flex-wrap:wrap;margin-top:2px}
+  .side .collchip:hover .cog,.side .collchip.on .cog{display:flex}
+  .fbscope{display:flex;align-items:center;gap:12px;background:var(--surf2);border:1px solid var(--line);border-radius:10px;padding:9px 14px;margin:12px 0 2px;font-size:13px;font-weight:700;color:#eceee8}
+  .fbscope button{background:none;border:none;color:var(--primary2);font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .side #tagbar{gap:6px;margin:0}
+  .side #tagbar .sep{display:none}
+  .side #tagbar .lbl2{display:none}
+  .howto-d{border:1px solid var(--line);border-radius:12px;background:var(--field);overflow:hidden}
+  .howto-d>summary{list-style:none;cursor:pointer;padding:10px 12px;font-size:12.5px;font-weight:800;color:#c2ccc5;display:flex;align-items:center;gap:8px}
+  .howto-d>summary::-webkit-details-marker{display:none}
+  .howto-d>summary .cv{margin-left:auto;color:var(--muted);transition:transform .2s}
+  .howto-d[open]>summary .cv{transform:rotate(180deg)}
+  .howto-steps{padding:2px 12px 12px;display:flex;flex-direction:column;gap:11px}
+  .hstep{display:flex;gap:9px}.hstep .n{flex:none;width:20px;height:20px;border-radius:50%;background:var(--primary);color:#252425;font-weight:900;font-size:11px;display:flex;align-items:center;justify-content:center}
+  .hstep b{color:#fff;font-size:12.5px;display:block}.hstep .d{color:var(--muted);font-size:12px}
+  .side .setlink{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:10px;color:#c2ccc5;font-weight:700;font-size:13px;text-decoration:none;border:1px solid transparent}
+  .side .setlink:hover{background:var(--surf2)}
+  .main{min-width:0}
+  .viewbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  .seg{display:inline-flex;background:var(--field);border:1px solid var(--line);border-radius:22px;padding:3px}
+  .seg button{border:none;background:transparent;color:var(--muted);font-weight:800;font-size:13px;padding:7px 15px;border-radius:20px;cursor:pointer;font-family:inherit}
+  .seg button.on{background:var(--primary);color:#252425}
+  /* --- feedback lens --- */
+  .fbitem{background:linear-gradient(90deg,rgba(48,61,56,.95),rgba(48,61,56,.95));border:1px solid #c2983d;border-radius:0 16px 0 16px;box-shadow:0 4px 16px rgba(28,27,28,.25);margin:14px 0;overflow:hidden}
+  .fbhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 18px;font-weight:900;color:#fff;font-size:14.5px;border-bottom:1px solid rgba(194,152,61,.12)}
+  .fbhead .c{font-size:11px;font-weight:700;color:#303d38;background:#eceee8;border-radius:20px;padding:2px 9px}
+  .fbcmt{display:flex;gap:11px;padding:12px 18px;border-top:1px solid rgba(194,152,61,.09)}
+  .fbcmt:first-of-type{border-top:none}
+  .fbcmt.done{opacity:.6}
+  .fbcmt .fbadge{flex:none;width:22px;height:22px;border-radius:50%;background:var(--primary);color:#252425;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .fbcmt .fbadge.done{background:var(--green);color:#2f3a34}
+  .fbcmt .bd{flex:1;min-width:0}
+  .fbcmt .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .fbcmt .who{font-size:12.5px;font-weight:800}
+  .fbcmt .when{font-size:11px;color:var(--muted)}
+  .fbcmt .st{font-size:10px;font-weight:800;text-transform:uppercase;padding:2px 8px;border-radius:20px}
+  .fbcmt .st.open{background:#eceee8;color:#303d38}.fbcmt .st.res{background:#C8E6C9;color:#18551D}
+  .fbcmt .txt{font-size:13.5px;color:#c2ccc5;margin:3px 0;line-height:1.4}
+  .fbcmt .rep{margin-top:6px;padding-left:10px;border-left:2px solid var(--line);font-size:12.5px;color:var(--muted)}
+  .fbcmt .rep b{color:var(--text)}
+  .fbcmt .acts{display:flex;gap:14px;margin-top:7px;flex-wrap:wrap}
+  .fbcmt .acts button{background:none;border:none;color:var(--primary2);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;padding:0}
+  .fbcmt .acts button.sub{color:var(--muted)}
+  .fbcomposer{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+  .fbcomposer textarea{width:100%;min-height:54px;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical}
+  .fbcomposer .a{display:flex;gap:8px;justify-content:flex-end}
+  /* grouped tag filter (sidebar) */
+  .tagrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%}
+  .tagrow .fl{width:100%;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:2px 0 -1px}
+  .fchip.team.on{background:#eceee8;color:#303d38;border-color:#eceee8}
+  .fchip.program.on{background:rgba(147,120,246,.22);color:#CFC4FB;border-color:rgba(147,120,246,.6)}
+  /* item tag chips on cards */
+  .itags{display:flex;flex-wrap:wrap;gap:5px}
+  .itag{font-size:9.5px;font-weight:800;letter-spacing:.02em;padding:2px 8px;border-radius:20px;text-transform:uppercase;border:1px solid var(--line);color:#c2ccc5;background:rgba(194,152,61,.08)}
+  .itag.team{background:rgba(194,152,61,.16);color:#c2ccc5;border-color:rgba(194,152,61,.5)}
+  .itag.partner{background:rgba(129,199,132,.14);color:#A8D8AB;border-color:rgba(129,199,132,.4)}
+  .itag.program{background:rgba(147,120,246,.18);color:#CFC4FB;border-color:rgba(147,120,246,.45)}
+  /* tag editor modal */
+  .scrim{position:fixed;inset:0;background:rgba(28,27,28,.82);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
+  .scrim.show{display:flex}
+  .tagbox{width:420px;max-width:calc(100vw - 40px);background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:22px 22px 18px;box-shadow:0 30px 80px rgba(18,17,18,.7)}
+  .tagbox h3{margin:0 0 14px;font-size:16px;color:#fff}
+  .tagbox .tf{margin-bottom:11px}
+  .tagbox label{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#c2ccc5;margin:0 0 4px}
+  .tagbox input{width:100%;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;font-family:inherit}
+  .tagbox input::placeholder{color:#6f6a5b}
+  .tagbox-a{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+  .tghint{color:var(--muted);font-size:12px;margin-top:10px;line-height:1.4}
+  @media(max-width:820px){.shell{grid-template-columns:1fr}.side{position:static}}
+/* Studio design-system component signatures */
+  .btn,.btn.sm,.btn.on,.btn.ghost,.btn.red,.btn.danger{border-radius:24px}
+  .card,.newform{border-radius:0 16px 0 16px;border-color:#c2983d}
+  .card{background:linear-gradient(90deg,rgba(48,61,56,.95) 0%,rgba(48,61,56,.95) 100%);box-shadow:0 4px 16px rgba(28,27,28,.25)}
+  input,textarea,select{border-radius:10px}
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <span class="brandmark" style="font:700 15px/1 system-ui,-apple-system,sans-serif;color:#fff;letter-spacing:.3px"></span>
+    <span class="spacer"></span>
+    <button class="btn ghost" id="adminBtn" onclick="toggleAdmin()">Admin: locked</button>
+    <button class="btn" onclick="toggleNew()">+ New review</button>
+    <input type="file" id="newfile" accept="application/pdf,.pdf,image/png,image/jpeg,image/gif,image/webp,image/svg+xml,.png,.jpg,.jpeg,.gif,.webp,.svg" style="display:none" onchange="uploadFile(this.files[0]); this.value='';">
+    <input type="file" id="verfile" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,application/pdf,.png,.jpg,.jpeg,.gif,.webp,.svg,.pdf" style="display:none" onchange="uploadNewVersion(this.files[0]); this.value='';">
+  </div>
+  <nav class="topnav"><a class="on" href="./library.html">Review</a><a href="./hub.html">Settings</a></nav>
+</header>
+<div style="max-width:1220px;margin:0 auto;padding:14px 24px 0">
+  <div class="newform" id="newform">
+    <div class="fields">
+      <div class="f"><label>Paste a link  <span style="font-weight:400;color:var(--sub,#928a74)">— or upload a file</span></label><input id="nurl" type="text" placeholder="https://your-site.com  ·  vimeo.com/…  ·  …/file.pdf  ·  Google Drive link"></div>
+      <div class="f"><label>Label (optional)</label><input id="nname" type="text" placeholder="e.g. Brand site refresh"></div>
+    </div>
+    <div class="row" style="align-items:center;gap:12px;flex-wrap:wrap;margin:2px 0 2px;">
+      <button class="btn ghost" type="button" onclick="document.getElementById('newfile').click()">Upload a PDF or image</button>
+      <span style="color:var(--sub,#928a74);font-size:12px">or</span>
+      <label style="display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--sub,#928a74)">Add to collection
+        <select id="ncoll" style="background:var(--field,#2e352f);color:var(--text,#eceee8);border:1px solid var(--line,#45514a);border-radius:8px;padding:6px 10px;font-family:inherit;font-size:12.5px;cursor:pointer;"></select>
+      </label>
+    </div>
+    <div class="types">
+      <span class="tchip"><b>Website</b> — any URL</span>
+      <span class="tchip"><b>Video</b> — Vimeo link or .mp4</span>
+      <span class="tchip"><b>PDF</b> — .pdf link or Google Drive share link</span>
+      <span class="tchip"><b>Google Docs / Slides / Sheets</b> — share link (auto-exports to PDF)</span>
+      <span class="tchip"><b>Image</b> — PNG, JPG, GIF, WebP or a direct image link</span>
+      <span class="tchip soon">PPT (export to PDF) — coming soon</span>
+    </div>
+    <div class="row">
+      <button class="btn" onclick="createReview()">Create review</button>
+      <button class="btn ghost" onclick="toggleNew()">Cancel</button>
+    </div>
+    <div class="err" id="nerr"></div>
+  </div>
+</div>
+
+<div class="shell">
+  <aside class="side">
+    <div class="snav">Collections</div>
+    <div class="colls" id="colls"></div>
+    <div class="snav">Filter by tag</div>
+    <div class="colls tagbar" id="tagbar"></div>
+    <details class="howto-d">
+      <summary>How this works<span class="cv">▾</span></summary>
+      <div class="howto-steps">
+        <div class="hstep"><span class="n">1</span><span><b>Add what needs review</b><span class="d">Upload a PDF/image or paste a link.</span></span></div>
+        <div class="hstep"><span class="n">2</span><span><b>Share a collection</b><span class="d">Send one reviewer link.</span></span></div>
+        <div class="hstep"><span class="n">3</span><span><b>Collect &amp; decide</b><span class="d">Reply &amp; resolve in Feedback.</span></span></div>
+      </div>
+    </details>
+    <a class="setlink" href="./hub.html">Settings</a>
+  </aside>
+
+  <main class="main">
+    <div class="viewbar">
+      <div class="seg">
+        <button id="lensItems" class="on" onclick="setLens('items')">Items</button>
+        <button id="lensFeedback" onclick="setLens('feedback')">Feedback</button>
+      </div>
+      <div class="searchwrap" style="flex:1;min-width:170px"><input id="search" type="text" placeholder="Search…" oninput="paint()"></div>
+      <span id="itemTabs" style="display:inline-flex;gap:8px;flex-wrap:wrap">
+        <button class="tab on" data-f="all" onclick="setF('all')">All</button>
+        <button class="tab" data-f="open" onclick="setF('open')">Has open</button>
+        <button class="tab" data-f="done" onclick="setF('done')">All resolved</button>
+        <button class="tab" data-f="archived" onclick="setF('archived')">Archived</button>
+      </span>
+      <span id="fbTabs" style="display:none;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="tab on" data-fb="open" onclick="setFB('open')">Open</button>
+        <button class="tab" data-fb="all" onclick="setFB('all')">All</button>
+        <button class="tab" data-fb="resolved" onclick="setFB('resolved')">Resolved</button>
+        <button class="btn ghost sm" onclick="exportFeedbackCsv()">Export CSV</button>
+      </span>
+      <button class="btn ghost sm" onclick="load()">Refresh</button>
+    </div>
+
+    <div id="grid"><div class="muted">Loading…</div></div>
+    <div id="board" style="display:none"></div>
+  </main>
+</div>
+
+<div class="scrim" id="tagScrim">
+  <div class="tagbox">
+    <h3 id="tagTitle">Tags</h3>
+    <div class="tf"><label>Team</label><input id="tgTeam" list="teamOpts" placeholder="e.g. Creative Services"></div>
+    <div class="tf"><label>Partner</label><input id="tgPartner" list="partnerOpts" placeholder="e.g. Salve Regina"></div>
+    <div class="tf"><label>Program</label><input id="tgProgram" list="programOpts" placeholder="e.g. Project A"></div>
+    <div class="tf"><label>Source</label><input id="tgSource" list="sourceOpts" placeholder="e.g. Review tool, Upload"></div>
+    <div class="tf"><label>Other tags</label><input id="tgFree" placeholder="comma-separated, e.g. Fall 26, hero"></div>
+    <datalist id="teamOpts"></datalist><datalist id="partnerOpts"></datalist><datalist id="programOpts"></datalist><datalist id="sourceOpts"></datalist>
+    <div class="tagbox-a"><button class="btn ghost" onclick="closeTags()">Cancel</button><button class="btn" onclick="saveTags()">Save tags</button></div>
+    <div id="tgHint" class="tghint"></div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+var CFG = {
+  url: window.APP.supabaseUrl,
+  key: window.APP.supabaseKey
+};
+var PROXY = window.APP.proxyUrl;
+var H = { apikey: CFG.key, Authorization: 'Bearer ' + CFG.key };
+var REVIEWS = [], COMMENTS = [], COLLECTIONS = [], MEMBERS = [], FILTER = 'all', COLL_FILTER = null;
+var TAG_FILTER = { team:null, partner:null, program:null, source:null, type:null, status:null };
+var TAG_TARGET = null;   // {kind:'item'|'coll', id} for the tag editor
+var TEAM_SEED = ['Design','Marketing','Product'];   // edit to your own teams
+// Where a review originated. Other tools can stamp source:<tool> when they POST
+// a review here; items added directly in this tool are "Review tool".
+var SOURCE_SEED = ['Review tool','Upload'];   // where a review originated
+// --- item tags (namespaced: team:… partner:… program:…, plus free tags) -----
+function itemTags(r){ return (r&&r.tags)||[]; }
+function hasNs(r,ns,val){ return itemTags(r).indexOf(ns+':'+val)>=0; }
+function firstNs(tags,ns){ for(var i=0;i<tags.length;i++){ if(tags[i].indexOf(ns+':')===0) return tags[i].slice(ns.length+1); } return ''; }
+function nsValues(ns){ var s={}; REVIEWS.forEach(function(r){ itemTags(r).forEach(function(t){ if(t.indexOf(ns+':')===0) s[t.slice(ns.length+1)]=1; }); }); return Object.keys(s).sort(); }
+function jsStr(s){ return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function itemPassesTags(r){
+  if(TAG_FILTER.team && !hasNs(r,'team',TAG_FILTER.team)) return false;
+  if(TAG_FILTER.partner && !hasNs(r,'partner',TAG_FILTER.partner)) return false;
+  if(TAG_FILTER.program && !hasNs(r,'program',TAG_FILTER.program)) return false;
+  if(TAG_FILTER.source && !hasNs(r,'source',TAG_FILTER.source)) return false;
+  if(TAG_FILTER.type && kindOf(r.url)!==TAG_FILTER.type) return false;
+  if(TAG_FILTER.status && statusOf(r)!==TAG_FILTER.status) return false;
+  return true;
+}
+var LENS = 'items', FB_FILTER = 'open', EDITING = false, REPLYING = null, FB_ITEM = null;   // FB_ITEM = a single item's project to scope Feedback to
+// Admin gate: Delete/Archive are hidden until unlocked with the passcode.
+// Only a SHA-256 hash is stored here — never the passcode itself.
+var PASS_HASH = 'f4527dc1f2eb12028f3ef794499cb82492181c2a1161224598c98426e74f381c'; // SHA-256 of the admin passcode (plaintext not stored)
+var ADMIN = sessionStorage.getItem('idr_admin')==='1';
+function $(id){return document.getElementById(id);}
+async function sha256(s){ var b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [].map.call(new Uint8Array(b),function(x){return x.toString(16).padStart(2,'0');}).join(''); }
+function updateAdminBtn(){ var b=$('adminBtn'); if(b) b.textContent = ADMIN ? 'Admin: unlocked (lock)' : 'Admin: locked'; }
+async function toggleAdmin(){
+  if(ADMIN){ ADMIN=false; sessionStorage.removeItem('idr_admin'); updateAdminBtn(); render(); return; }
+  var p=prompt('Enter the admin passcode to enable Delete / Archive:');
+  if(p===null) return;
+  var h=await sha256(p);
+  if(h===PASS_HASH){ ADMIN=true; sessionStorage.setItem('idr_admin','1'); updateAdminBtn(); render(); }
+  else alert('Incorrect passcode.');
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
+function toggleNew(){
+  var f=$('newform'); f.classList.toggle('show'); $('nerr').textContent='';
+  if(f.classList.contains('show')){
+    var sel=$('ncoll');
+    if(sel){ sel.innerHTML='<option value="">No collection</option>'+COLLECTIONS.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('')+'<option value="__new">+ New collection…</option>'; sel.value=''; }
+    $('nurl').focus();
+  }
+}
+function setF(f){ FILTER=f; [].forEach.call(document.querySelectorAll('#itemTabs .tab'),function(t){t.classList.toggle('on',t.dataset.f===f);}); render(); }
+
+function load(){
+  Promise.all([
+    fetch(CFG.url+'/rest/v1/reviews?select=*&order=created_at.desc',{headers:H}).then(function(r){return r.ok?r.json():Promise.reject('reviews '+r.status);}),
+    fetch(CFG.url+'/rest/v1/review_comments?select=*&order=created_at.asc',{headers:H}).then(function(r){return r.ok?r.json():[];}),
+    fetch(CFG.url+'/rest/v1/collections?select=*&order=created_at.desc',{headers:H}).then(function(r){return r.ok?r.json():[];}),
+    fetch(CFG.url+'/rest/v1/collection_items?select=*',{headers:H}).then(function(r){return r.ok?r.json():[];})
+  ]).then(function(res){ REVIEWS=res[0]; COMMENTS=res[1]||[]; COLLECTIONS=res[2]||[]; MEMBERS=res[3]||[]; renderColls(); paint(); })
+   .catch(function(e){ $('grid').innerHTML='<div class="muted">Could not load ('+e+'). Make sure the <b>reviews</b> table exists (run the setup SQL).</div>'; });
+}
+// --- collections -----------------------------------------------------------
+function collName(id){ var c=COLLECTIONS.filter(function(x){return x.id===id;})[0]; return c?c.name:'Collection'; }
+function collSize(id){ return MEMBERS.filter(function(m){return m.collection_id===id;}).length; }
+function membersOf(reviewId){ return MEMBERS.filter(function(m){return m.review_id===reviewId;}); }
+function collLink(id){ return location.href.replace(/[^\/]*$/,'')+'collection.html?id='+encodeURIComponent(id); }
+function setCollFilter(id){ COLL_FILTER = (COLL_FILTER===id? null : id); renderColls(); paint(); }
+function renderColls(){
+  var strip=$('colls'); if(!strip) return;
+  var html='<span class="lbl">Collections</span>';
+  html+='<span class="collchip'+(COLL_FILTER===null?' on':'')+'" onclick="setCollFilter(null)">All items <span class="n">('+REVIEWS.filter(function(r){return !r.archived;}).length+')</span></span>';
+  COLLECTIONS.forEach(function(c){
+    html+='<span class="collchip'+(COLL_FILTER===c.id?' on':'')+'" onclick="setCollFilter(\''+c.id+'\')">'
+      +esc(c.name)+' <span class="n">('+collSize(c.id)+')</span>'
+      +'<span class="cog" onclick="event.stopPropagation()">'
+        +'<button class="mini" title="Copy reviewer link" onclick="shareCollection(\''+c.id+'\')">Copy link</button>'
+        +'<button class="mini" title="Tag every item in this collection" onclick="openCollTags(\''+c.id+'\')">Tag items</button>'
+        +'<button class="mini" title="Rename" onclick="renameCollection(\''+c.id+'\')">Rename</button>'
+        +(ADMIN?'<button class="mini" title="Delete collection" onclick="delCollection(\''+c.id+'\')">Delete</button>':'')
+      +'</span></span>';
+  });
+  html+='<button class="collnew" onclick="createCollection()">+ New collection</button>';
+  strip.innerHTML=html;
+  renderTags();
+}
+// "Filter by tag": Team / Partner / Program come from item tags; Type + Status are derived.
+var TYPES=['Image','PDF','Video','Website'];
+var STATUSES=[['in_review','In review'],['changes','Changes'],['approved','Approved']];
+function teamValues(){ var s={}; TEAM_SEED.forEach(function(t){s[t]=1;}); nsValues('team').forEach(function(t){s[t]=1;}); return Object.keys(s).sort(); }
+function sourceValues(){ var s={}; SOURCE_SEED.forEach(function(t){s[t]=1;}); nsValues('source').forEach(function(t){s[t]=1;}); return Object.keys(s).sort(); }
+function renderTags(){
+  var bar=$('tagbar'); if(!bar) return;
+  var any=TAG_FILTER.team||TAG_FILTER.partner||TAG_FILTER.program||TAG_FILTER.type||TAG_FILTER.status;
+  function group(label,ns,vals){
+    if(!vals.length) return '';
+    var h='<div class="tagrow"><span class="fl">'+label+'</span>';
+    vals.forEach(function(v){ h+='<button class="fchip '+ns+(TAG_FILTER[ns]===v?' on':'')+'" onclick="setTag(\''+ns+'\',\''+jsStr(v)+'\')">'+esc(v)+'</button>'; });
+    return h+'</div>';
+  }
+  var html=group('Team','team',teamValues())+group('Partner','partner',nsValues('partner'))+group('Program','program',nsValues('program'))+group('Source','source',sourceValues())+group('Type','type',TYPES);
+  var sh='<div class="tagrow"><span class="fl">Status</span>';
+  STATUSES.forEach(function(s){ sh+='<button class="fchip status'+(TAG_FILTER.status===s[0]?' on':'')+'" onclick="setTag(\'status\',\''+s[0]+'\')">'+s[1]+'</button>'; });
+  html+=sh+'</div>';
+  if(any) html+='<div class="tagrow"><button class="clr" onclick="clearTags()">Clear all filters</button></div>';
+  bar.innerHTML=html;
+}
+function setTag(kind,val){ TAG_FILTER[kind]=(TAG_FILTER[kind]===val?null:val); renderTags(); paint(); }
+function clearTags(){ TAG_FILTER={team:null,partner:null,program:null,source:null,type:null,status:null}; renderTags(); paint(); }
+// ---- tag editor (item + collection-bulk) ----
+function fillDL(id,vals){ var el=$(id); if(el) el.innerHTML=vals.map(function(v){return '<option value="'+esc(v)+'">';}).join(''); }
+function refreshTagDatalists(){ fillDL('teamOpts',teamValues()); fillDL('partnerOpts',nsValues('partner')); fillDL('programOpts',nsValues('program')); fillDL('sourceOpts',sourceValues()); }
+function openItemTags(id){
+  var r=REVIEWS.filter(function(x){return x.id===id;})[0]; if(!r) return;
+  TAG_TARGET={kind:'item',id:id};
+  $('tagTitle').textContent='Tags — '+(r.name||r.project||'item');
+  var t=itemTags(r);
+  $('tgTeam').value=firstNs(t,'team'); $('tgPartner').value=firstNs(t,'partner'); $('tgProgram').value=firstNs(t,'program'); $('tgSource').value=firstNs(t,'source');
+  $('tgFree').value=t.filter(function(x){return !/^(team|partner|program|source):/.test(x);}).join(', ');
+  $('tgHint').textContent=''; refreshTagDatalists(); $('tagScrim').classList.add('show'); setTimeout(function(){$('tgTeam').focus();},30);
+}
+function openCollTags(id){
+  var c=COLLECTIONS.filter(function(x){return x.id===id;})[0]; if(!c) return;
+  TAG_TARGET={kind:'coll',id:id};
+  $('tagTitle').textContent='Tag all items in “'+c.name+'”';
+  $('tgTeam').value=''; $('tgPartner').value=''; $('tgProgram').value=''; $('tgSource').value=''; $('tgFree').value='';
+  $('tgHint').textContent='Adds these tags to every item in this collection (anything already tagged stays).';
+  refreshTagDatalists(); $('tagScrim').classList.add('show'); setTimeout(function(){$('tgTeam').focus();},30);
+}
+function closeTags(){ $('tagScrim').classList.remove('show'); TAG_TARGET=null; }
+function saveTags(){
+  if(!TAG_TARGET) return;
+  var team=$('tgTeam').value.trim(), partner=$('tgPartner').value.trim(), program=$('tgProgram').value.trim(), source=$('tgSource').value.trim();
+  var free=$('tgFree').value.split(',').map(function(s){return s.trim();}).filter(Boolean);
+  if(TAG_TARGET.kind==='item'){
+    var arr=[]; if(team)arr.push('team:'+team); if(partner)arr.push('partner:'+partner); if(program)arr.push('program:'+program); if(source)arr.push('source:'+source); free.forEach(function(f){arr.push(f);});
+    patchReview(TAG_TARGET.id,{tags:arr}).then(function(res){ if(!res.ok) alert('Could not save tags ('+res.status+'). Did you run reviews-tags-setup.sql?'); closeTags(); load(); });
+  } else {
+    var memberIds=MEMBERS.filter(function(m){return m.collection_id===TAG_TARGET.id;}).map(function(m){return m.review_id;});
+    if(!memberIds.length){ alert('This collection has no items yet.'); return; }
+    Promise.all(memberIds.map(function(id){
+      var r=REVIEWS.filter(function(x){return x.id===id;})[0]; var cur=itemTags(r).slice();
+      function setNs(ns,val){ if(!val) return; cur=cur.filter(function(t){return t.indexOf(ns+':')!==0;}); cur.push(ns+':'+val); }
+      setNs('team',team); setNs('partner',partner); setNs('program',program); setNs('source',source);
+      free.forEach(function(f){ if(cur.indexOf(f)<0) cur.push(f); });
+      return patchReview(id,{tags:cur});
+    })).then(function(rs){ var bad=rs.filter(function(x){return !x.ok;}).length; if(bad) alert(bad+' item(s) failed. Did you run reviews-tags-setup.sql?'); closeTags(); load(); })
+      .catch(function(e){ alert('Bulk tag failed ('+e.message+').'); });
+  }
+}
+function createCollection(cb){
+  var n=prompt('Name this collection (e.g. “Fall campaign — send to Krista”):','');
+  if(n===null) return; n=n.trim(); if(!n) return;
+  fetch(CFG.url+'/rest/v1/collections',{method:'POST',headers:Object.assign({'Content-Type':'application/json',Prefer:'return=representation'},H),body:JSON.stringify([{name:n,created_by:'Team'}])})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(rows){ var id=rows&&rows[0]&&rows[0].id; return (typeof cb==='function'&&id)?cb(id):load(); })
+    .catch(function(e){ alert('Could not create collection ('+e.message+'). Did you run collections-setup.sql?'); });
+}
+function renameCollection(id){
+  var n=prompt('Rename collection:', collName(id)); if(n===null) return; n=n.trim(); if(!n) return;
+  fetch(CFG.url+'/rest/v1/collections?id=eq.'+id,{method:'PATCH',headers:Object.assign({'Content-Type':'application/json'},H),body:JSON.stringify({name:n})}).then(load);
+}
+function delCollection(id){
+  if(!confirm('Delete the collection “'+collName(id)+'”? (The reviews themselves are not deleted.)')) return;
+  fetch(CFG.url+'/rest/v1/collections?id=eq.'+id,{method:'DELETE',headers:H}).then(function(){ if(COLL_FILTER===id) COLL_FILTER=null; load(); });
+}
+function addToCollection(reviewId,collectionId){
+  if(!collectionId) return;
+  if(collectionId==='__new'){ createCollection(function(id){ return addToCollection(reviewId,id); }); return; }
+  fetch(CFG.url+'/rest/v1/collection_items',{method:'POST',headers:Object.assign({'Content-Type':'application/json',Prefer:'return=minimal'},H),body:JSON.stringify([{collection_id:collectionId,review_id:reviewId}])})
+    .then(function(r){ if(!r.ok && r.status!==409) throw new Error('HTTP '+r.status); load(); })
+    .catch(function(e){ alert('Could not add to collection ('+e.message+').'); });
+}
+function removeFromCollection(reviewId,collectionId){
+  fetch(CFG.url+'/rest/v1/collection_items?review_id=eq.'+reviewId+'&collection_id=eq.'+collectionId,{method:'DELETE',headers:H}).then(load);
+}
+function shareCollection(id){
+  var url=collLink(id);
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(function(){ alert('Reviewer link copied:\n\n'+url); },function(){ prompt('Copy this reviewer link:',url); }); }
+  else prompt('Copy this reviewer link:',url);
+}
+function counts(project){
+  var open=0,res=0;
+  COMMENTS.forEach(function(c){ if(c.parent_id) return; if(c.project!==project) return; if(c.resolved) res++; else open++; });
+  return {open:open,res:res};
+}
+function isVideo(u){ return /vimeo\.com|player\.vimeo|\.(mp4|webm|mov|m4v)(\?|$)/i.test(u||''); }
+// Synthesia / OpenReel are login-gated review apps we can't overlay — these use the
+// lightweight decision page: reviewer comments natively there, then sends a decision.
+function isDecision(u){ return /synthesia\.io|openreel\.com/i.test(u||''); }
+// Google Drive files + Docs/Slides/Sheets are reviewed as PDF (pdf.html exports them).
+function isDrive(u){ return /drive\.google\.com\/(file\/d\/|open\?|uc\?)|drive\.usercontent\.google\.com|docs\.google\.com\/(document|presentation|spreadsheets)\//i.test(u||''); }
+function isPdf(u){ return /\.pdf(\?|$)/i.test(u||'') || isDrive(u); }
+// A direct image file (uploaded to Storage or any direct image link). Drive/Docs
+// links are handled as PDF above, so they never fall through to here.
+function isImage(u){ return /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/i.test(u||''); }
+// An uploaded file living in our Storage bucket (vs. a pasted website/URL/Drive
+// link). Only uploaded files get version history — you replace the file, not a
+// live link.
+function isUpload(u){ return /\/storage\/v1\/object\/public\//.test(u||''); }
+function kindOf(u){ return isDecision(u)?'Video review':isPdf(u)?'PDF':isVideo(u)?'Video':isImage(u)?'Image':'Website'; }
+function reviewLink(r){
+  if(isDecision(r.url)) return 'decision.html?v='+encodeURIComponent(r.url)+'&name='+encodeURIComponent(r.name||'');
+  if(isPdf(r.url)) return 'pdf.html?v='+encodeURIComponent(r.url)+'&name='+encodeURIComponent(r.name||'');
+  if(isVideo(r.url)) return 'video.html?v='+encodeURIComponent(r.url)+'&name='+encodeURIComponent(r.name||'');
+  if(isImage(r.url)) return 'image.html?v='+encodeURIComponent(r.url)+'&name='+encodeURIComponent(r.name||'');
+  return PROXY+'?url='+encodeURIComponent(r.url);
+}
+function viewLabel(u){ return isDecision(u)?'Review & decide':isPdf(u)?'Review PDF':isVideo(u)?'Review video':isImage(u)?'Review image':'View site'; }
+function render(){
+  var q=($('search').value||'').toLowerCase();
+  var inColl = COLL_FILTER ? MEMBERS.filter(function(m){return m.collection_id===COLL_FILTER;}).reduce(function(a,m){a[m.review_id]=1;return a;},{}) : null;
+  var list=REVIEWS.filter(function(r){
+    var hay=((r.name||'')+' '+(r.url||'')+' '+(r.project||'')+' '+itemTags(r).join(' ')).toLowerCase();
+    if(q && hay.indexOf(q)<0) return false;
+    if(inColl && !inColl[r.id]) return false;        // restrict to the selected collection
+    if(!itemPassesTags(r)) return false;             // Team/Partner/Program/Source/Type/Status tag filters
+    if(FILTER==='archived') return !!r.archived;   // archived-only view
+    if(r.archived) return false;                    // hide archived from all other views
+    var c=counts(r.project);
+    if(FILTER==='open') return c.open>0;
+    if(FILTER==='done') return c.open===0 && c.res>0;
+    return true;
+  });
+  if(!list.length){ $('grid').innerHTML='<div class="muted">'+(COLL_FILTER?'No items in this collection yet. Add some with the “+ collection” control on any card below.':(REVIEWS.length?'Nothing matches your search or filter.':'Nothing to review yet.<br>Click <b>+ New review</b> up top to paste a link or upload a PDF/image.'))+'</div>'; return; }
+  $('grid').innerHTML=list.map(function(r){
+    var c=counts(r.project);
+    var pills = (c.open?'<span class="pill open">'+c.open+' open</span>':'')
+              + (c.res?'<span class="pill res">'+c.res+' resolved</span>':'')
+              + (!c.open&&!c.res?'<span class="pill none">No comments yet</span>':'');
+    var when = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
+    var mems=membersOf(r.id);
+    var memIds=mems.map(function(m){return m.collection_id;});
+    var memHtml=mems.map(function(m){ return '<span class="memchip">'+esc(collName(m.collection_id))+'<button title="Remove from collection" onclick="removeFromCollection(\''+r.id+'\',\''+m.collection_id+'\')">×</button></span>'; }).join('');
+    var opts='<option value="">+ collection…</option>'
+      + COLLECTIONS.filter(function(c){return memIds.indexOf(c.id)<0;}).map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('')
+      + '<option value="__new">＋ New collection…</option>';
+    var memRow='<div class="mem">'+memHtml+'<select class="addcoll" onchange="addToCollection(\''+r.id+'\',this.value);this.value=\'\';">'+opts+'</select></div>';
+    var st=statusOf(r);
+    var upload=isUpload(r.url);
+    var vbadge=(upload && (r.current_v||1)>1) ? '<span class="ctag" title="Current version — earlier versions are inside the review">v'+r.current_v+'</span>' : '';
+    var itagHtml=itemTags(r).length ? '<div class="itags">'+itemTags(r).map(function(t){
+      var m=t.match(/^(team|partner|program|source):(.*)$/); var ns=m?m[1]:'free'; var v=m?m[2]:t;
+      return '<span class="itag '+ns+'" title="'+ns+'">'+esc(v)+'</span>';
+    }).join('')+'</div>' : '';
+    return '<div class="card">'
+      +'<div class="ctop"><div class="cname">'+esc(r.name||r.project)+'</div><div style="display:flex;gap:6px;flex:none">'+vbadge+'<span class="ctag">'+kindOf(r.url)+'</span></div></div>'
+      +'<div class="curl" title="'+esc(r.url)+'">'+esc(r.url)+'</div>'
+      +'<div class="counts"><span class="statustag '+st+'">'+statusLabel(st)+'</span>'+pills+'</div>'
+      +itagHtml
+      +memRow
+      +'<div class="cmeta">'+esc(r.created_by||'Team')+(when?' · '+when:'')+'</div>'
+      +'<div class="cactions">'
+        +'<a class="plain" href="'+esc(reviewLink(r))+'" target="_blank"><button class="btn sm">'+viewLabel(r.url)+'</button></a>'
+        +'<button class="btn ghost sm" onclick="showItemFeedback(\''+esc(r.project).replace(/'/g,"\\'")+'\')">Feedback</button>'
+        +(upload?'<button class="btn ghost sm" title="Upload a revised file — starts a fresh review, keeps the old version + notes" onclick="pickNewVersion(\''+r.id+'\')">＋ New version</button>':'')
+        +'<select class="addcoll" title="Set review status" onchange="setStatus(\''+r.id+'\',this.value)">'
+          +'<option value="in_review"'+(st==='in_review'?' selected':'')+'>In review</option>'
+          +'<option value="changes"'+(st==='changes'?' selected':'')+'>Changes requested</option>'
+          +'<option value="approved"'+(st==='approved'?' selected':'')+'>Approved</option>'
+        +'</select>'
+        +'<button class="btn ghost sm" onclick="openItemTags(\''+r.id+'\')">Tags</button>'
+        +'<button class="btn ghost sm" onclick="renameReview(\''+r.id+'\')">Rename</button>'
+        +(ADMIN ? '<button class="btn ghost sm" onclick="setArchived(\''+r.id+'\','+(r.archived?'false':'true')+')">'+(r.archived?'Unarchive':'Archive')+'</button>'
+                 +'<button class="btn ghost sm danger" onclick="delReview(\''+r.id+'\')">Delete</button>' : '')
+      +'</div></div>';
+  }).join('');
+}
+// ===== Feedback lens =======================================================
+function paint(){ render(); renderFeedback(); }
+function setLens(l,keepItem){
+  LENS=l;
+  if(!keepItem) FB_ITEM=null;
+  $('grid').style.display   = l==='items'?'':'none';
+  $('board').style.display  = l==='feedback'?'':'none';
+  $('itemTabs').style.display = l==='items'?'inline-flex':'none';
+  $('fbTabs').style.display   = l==='feedback'?'inline-flex':'none';
+  $('lensItems').classList.toggle('on', l==='items');
+  $('lensFeedback').classList.toggle('on', l==='feedback');
+  paint();
+}
+// From an item card: jump to the Feedback lens scoped to just that item (in-page, no dashboard).
+function showItemFeedback(project){ FB_ITEM=project; setLens('feedback',true); }
+function clearItemFeedback(){ FB_ITEM=null; renderFeedback(); }
+function exportFeedbackCsv(){
+  var scope = FB_ITEM ? (function(){var s={}; s[FB_ITEM]=1; return s;})() : feedbackScope();
+  var rows=[['item','page','status','comment','author','created_at','type']];
+  COMMENTS.forEach(function(c){ if(scope!==null && !scope.hasOwnProperty(c.project)) return; rows.push([projName(c.project),c.page,c.resolved?'resolved':'open',c.body,c.author,c.created_at,c.parent_id?'reply':'comment']); });
+  if(rows.length<2){ alert('Nothing to export yet.'); return; }
+  var csv=rows.map(function(r){return r.map(function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='feedback-export.csv'; a.click();
+}
+function setFB(f){ FB_FILTER=f; [].forEach.call(document.querySelectorAll('#fbTabs .tab'),function(t){t.classList.toggle('on',t.dataset.fb===f);}); renderFeedback(); }
+function projName(pr){ for(var i=0;i<REVIEWS.length;i++){ if(REVIEWS[i].project===pr) return REVIEWS[i].name||pr; } return pr; }
+// Which items (by project) are in scope, honoring the SAME collection + tag + search filters as the Items lens.
+// Returns null when nothing is filtered → Feedback shows every comment (like the old Dashboard).
+function anyTagFilter(){ return TAG_FILTER.team||TAG_FILTER.partner||TAG_FILTER.program||TAG_FILTER.source||TAG_FILTER.type||TAG_FILTER.status; }
+function feedbackScope(){
+  var q=($('search').value||'').toLowerCase();
+  if(!COLL_FILTER && !anyTagFilter() && !q) return null;   // nothing filtered → show all feedback
+  var inColl = COLL_FILTER ? MEMBERS.filter(function(m){return m.collection_id===COLL_FILTER;}).reduce(function(a,m){a[m.review_id]=1;return a;},{}) : null;
+  var map={};
+  REVIEWS.forEach(function(r){
+    if(r.archived) return;
+    var hay=((r.name||'')+' '+(r.url||'')+' '+(r.project||'')+' '+itemTags(r).join(' ')).toLowerCase();
+    if(q && hay.indexOf(q)<0) return;
+    if(inColl && !inColl[r.id]) return;
+    if(!itemPassesTags(r)) return;
+    map[r.project]=r.name||r.project;
+  });
+  return map;
+}
+function ago(iso){var s=Math.max(1,(Date.now()-new Date(iso))/1000);if(s<60)return'just now';var m=s/60;if(m<60)return Math.floor(m)+'m ago';var h=m/60;if(h<24)return Math.floor(h)+'h ago';return Math.floor(h/24)+'d ago';}
+function repliesOf(id){ return COMMENTS.filter(function(c){return String(c.parent_id)===String(id);}).sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at);}); }
+function renderFeedback(){
+  var board=$('board'); if(!board) return;
+  // FB_ITEM (from a card's Feedback button) pins the view to one item; else honor the sidebar filters.
+  var scope = FB_ITEM ? (function(){var s={}; s[FB_ITEM]=projName(FB_ITEM); return s;})() : feedbackScope();
+  var banner = FB_ITEM ? '<div class="fbscope">Feedback for '+esc(projName(FB_ITEM))+'<button onclick="clearItemFeedback()">Show all feedback</button></div>' : '';
+  var parents=COMMENTS.filter(function(c){ return !c.parent_id && (scope===null || scope.hasOwnProperty(c.project)); });
+  var shown=parents.filter(function(c){ return FB_FILTER==='all'?true:FB_FILTER==='open'?!c.resolved:c.resolved; });
+  if(!shown.length){ board.innerHTML=banner+'<div class="muted">No '+FB_FILTER+' feedback'+(FB_ITEM?' on this item':(COLL_FILTER?' in this collection':''))+' yet.</div>'; return; }
+  var byProj={}; shown.forEach(function(c){ (byProj[c.project]=byProj[c.project]||[]).push(c); });
+  var html=banner;
+  Object.keys(byProj).forEach(function(pr){
+    var nm = scope===null ? projName(pr) : (scope[pr]||pr);
+    html+='<div class="fbitem"><div class="fbhead"><span>'+esc(nm)+'</span><span class="c">'+byProj[pr].length+'</span></div>';
+    byProj[pr].forEach(function(c,i){
+      var reps=repliesOf(c.id);
+      var repHtml=reps.map(function(r){return '<div class="rep"><b>'+esc(r.author)+':</b> '+esc(r.body)+'</div>';}).join('');
+      var isReplying=(String(REPLYING)===String(c.id));
+      html+='<div class="fbcmt'+(c.resolved?' done':'')+'"><span class="fbadge'+(c.resolved?' done':'')+'">'+(c.resolved?'✓':(i+1))+'</span><div class="bd">'
+        +'<div class="top"><span class="who">'+esc(c.author)+'</span><span><span class="st '+(c.resolved?'res':'open')+'">'+(c.resolved?'Resolved':'Open')+'</span> <span class="when">'+ago(c.created_at)+'</span></span></div>'
+        +'<div class="txt">'+esc(c.body)+'</div>'
+        +repHtml
+        +'<div class="acts"><button onclick="startReply(\''+esc(c.id)+'\')">Reply'+(reps.length?' ('+reps.length+')':'')+'</button>'
+          +'<button onclick="toggleResolve(\''+esc(c.id)+'\','+(c.resolved?'false':'true')+')">'+(c.resolved?'Reopen':'Resolve')+'</button>'
+          +'<button class="sub" onclick="openInReviewer(\''+esc(c.id)+'\')">Open in reviewer ↗</button></div>'
+        +(isReplying?'<div class="fbcomposer"><textarea id="fbta-'+esc(c.id)+'" placeholder="Reply to '+esc(c.author)+'…"></textarea><div class="a"><button class="btn ghost sm" onclick="cancelReply()">Cancel</button><button class="btn sm" onclick="postReply(\''+esc(c.id)+'\')">Post reply</button></div></div>':'')
+        +'</div></div>';
+    });
+    html+='</div>';
+  });
+  board.innerHTML=html;
+  if(REPLYING){ var t=$('fbta-'+REPLYING); if(t) t.focus(); }
+}
+function openInReviewer(id){
+  var c=COMMENTS.filter(function(x){return String(x.id)===String(id);})[0]; if(!c) return;
+  var url;
+  if(c.page==='video')      url='./video.html?v='+encodeURIComponent(c.project)+'&focus='+encodeURIComponent(c.id);
+  else if(c.page==='pdf')   url='./pdf.html?v='+encodeURIComponent(c.project)+'&focus='+encodeURIComponent(c.id);
+  else if(c.page==='image') url='./image.html?v='+encodeURIComponent(c.project)+'&focus='+encodeURIComponent(c.id);
+  else if(c.page==='decision') url='./decision.html?v='+encodeURIComponent(c.project);
+  else { var t=/^https?:\/\//.test(c.project)?c.project:('https://'+c.project); t=t.replace(/\/+$/,'')+(c.page||'/'); url=PROXY+'?url='+encodeURIComponent(t)+'&focus='+encodeURIComponent(c.id); }
+  window.open(url,'_blank','noopener');
+}
+// identity (shared with the reviewer pages) + inline reply / resolve
+function getName(){return localStorage.getItem('idr_name')||'';}
+function authorName(){var n=getName(),e=localStorage.getItem('idr_email')||'';return n?(e?n+' ('+e+')':n):e;}
+function ensureIdentity(){ if(getName())return true; var n=prompt('Your name (shown on your replies):'); if(!n)return false; localStorage.setItem('idr_name',n.trim()); var e=prompt('Your email (optional):')||''; if(e.trim())localStorage.setItem('idr_email',e.trim()); return true; }
+function startReply(id){ if(!ensureIdentity())return; REPLYING=id; EDITING=true; renderFeedback(); }
+function cancelReply(){ REPLYING=null; EDITING=false; renderFeedback(); }
+function postReply(id){
+  var ta=$('fbta-'+id); if(!ta)return; var body=ta.value.trim(); if(!body){ ta.focus(); return; }
+  var c=COMMENTS.filter(function(x){return String(x.id)===String(id);})[0]; if(!c)return;
+  var row={project:c.project,page:c.page,author:authorName(),body:body,anchor:null,parent_id:c.id,resolved:false};
+  fetch(CFG.url+'/rest/v1/review_comments',{method:'POST',headers:Object.assign({'Content-Type':'application/json',Prefer:'return=minimal'},H),body:JSON.stringify([row])})
+    .then(function(r){ if(!r.ok)throw new Error('HTTP '+r.status); REPLYING=null; EDITING=false; load(); })
+    .catch(function(e){ alert('Could not post reply ('+e.message+').'); });
+}
+function toggleResolve(id,val){
+  fetch(CFG.url+'/rest/v1/review_comments?id=eq.'+id,{method:'PATCH',headers:Object.assign({'Content-Type':'application/json'},H),body:JSON.stringify({resolved:(val===true||val==='true')})})
+    .then(function(r){ if(!r.ok)throw new Error('HTTP '+r.status); load(); })
+    .catch(function(e){ alert('Could not update ('+e.message+').'); });
+}
+function statusOf(r){ return r.status||'in_review'; }
+function statusLabel(s){ return s==='approved'?'Approved':s==='changes'?'Changes requested':'In review'; }
+function setStatus(id,val){ patchReview(id,{status:val}).then(function(res){ if(!res.ok) alert('Could not set status — run: alter table public.reviews add column if not exists status text not null default \'in_review\';'); load(); }); }
+function patchReview(id,body){ return fetch(CFG.url+'/rest/v1/reviews?id=eq.'+id,{method:'PATCH',headers:Object.assign({'Content-Type':'application/json'},H),body:JSON.stringify(body)}); }
+function renameReview(id){
+  var r=REVIEWS.filter(function(x){return x.id===id;})[0];
+  var n=prompt('Rename this review:', (r&&r.name)||'');
+  if(n===null) return;
+  patchReview(id,{name:n.trim()||null}).then(function(res){ if(!res.ok) alert('Rename failed — run the archive/update SQL.'); load(); });
+}
+function setArchived(id,val){ patchReview(id,{archived:val}).then(function(res){ if(!res.ok) alert('Archive failed — run the archive/update SQL.'); load(); }); }
+function delReview(id){
+  if(!confirm('Delete this review permanently? (This does not delete its comments.)')) return;
+  fetch(CFG.url+'/rest/v1/reviews?id=eq.'+id,{method:'DELETE',headers:H}).then(load);
+}
+var BUCKET='pdf-reviews';
+// Upload a PDF from the user's computer into Supabase Storage, then add it as a
+// review card. The stored file gets a public URL that pdf.html opens in the
+// native viewer, exactly like a Drive/direct PDF link.
+// Insert a review row and return the created record (so we can add it to a collection).
+async function insertReview(body){
+  var res=await fetch(CFG.url+'/rest/v1/reviews',{method:'POST',headers:Object.assign({'Content-Type':'application/json',Prefer:'return=representation'},H),body:JSON.stringify([body])});
+  if(!res.ok) throw new Error('review save '+res.status);
+  var rows=await res.json();
+  return rows&&rows[0];
+}
+// After creating a review (URL or upload): optionally drop it into the chosen
+// collection, clear + close the form, and refresh.
+function finishNew(row){
+  var coll=$('ncoll')?$('ncoll').value:'';
+  if(row&&row.id&&coll){ addToCollection(row.id,coll); } else { load(); }   // addToCollection calls load()
+  $('nurl').value=''; $('nname').value=''; if($('ncoll')) $('ncoll').value='';
+  if($('newform').classList.contains('show')) toggleNew();
+}
+// Upload a PDF or image from the user's computer into the public Storage bucket,
+// then add it as a review card — same flow as pasting a link.
+async function uploadFile(file){
+  if(!file) return;
+  if(!$('newform').classList.contains('show')) toggleNew();
+  var isPdf=/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name);
+  var isImg=/^image\//i.test(file.type)||/\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(file.name);
+  if(!isPdf&&!isImg){ $('nerr').textContent='Choose a PDF or image file (PNG, JPG, GIF, WebP, SVG).'; return; }
+  if(file.size > 50*1024*1024 && !confirm('This file is '+(file.size/1048576).toFixed(1)+' MB. Uploads over ~50 MB may be rejected by Supabase. Try anyway?')) return;
+  var ext, ctype;
+  if(isPdf){ ext='.pdf'; ctype='application/pdf'; }
+  else { ext=(file.name.match(/\.(png|jpe?g|gif|webp|bmp|svg)$/i)||['.png'])[0].toLowerCase(); ctype=file.type||({'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.gif':'image/gif','.webp':'image/webp','.bmp':'image/bmp','.svg':'image/svg+xml'})[ext]||'application/octet-stream'; }
+  var base=file.name.replace(/\.[^.]+$/,'').replace(/[^a-zA-Z0-9-_]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)||(isPdf?'document':'image');
+  var path=base+'-'+Date.now()+ext;
+  $('nerr').textContent='Uploading “'+file.name+'”…';
+  try{
+    var up=await fetch(CFG.url+'/storage/v1/object/'+BUCKET+'/'+path,{method:'POST',headers:{apikey:CFG.key,Authorization:'Bearer '+CFG.key,'Content-Type':ctype,'x-upsert':'true'},body:file});
+    if(!up.ok){ var t=await up.text(); throw new Error('storage '+up.status+' '+t.slice(0,140)); }
+    var publicUrl=CFG.url+'/storage/v1/object/public/'+BUCKET+'/'+path;
+    var nm=($('nname').value||'').trim()||file.name.replace(/\.[^.]+$/,'');
+    var row=await insertReview({url:publicUrl, name:nm, project:publicUrl, created_by:'Team'});
+    finishNew(row);
+  }catch(e){
+    $('nerr').textContent='Upload failed: '+e.message+(/storage 4/.test(e.message)?' — is the storage bucket set up (storage-setup.sql)?':'');
+  }
+}
+// --- versioning ------------------------------------------------------------
+// Upload a revised file as the next version of an existing review. The new
+// file becomes the current version with a fresh "In review" status and its own
+// (empty) comment thread; the prior version + its notes stay for reference.
+var versionTarget=null;
+function pickNewVersion(id){ versionTarget=id; $('verfile').click(); }
+async function uploadNewVersion(file){
+  var id=versionTarget; versionTarget=null;
+  if(!file || !id) return;
+  var r=REVIEWS.filter(function(x){return x.id===id;})[0]; if(!r){ alert('Review not found.'); return; }
+  var isPdfFile=/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name);
+  var isImgFile=/^image\//i.test(file.type)||/\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(file.name);
+  if(!isPdfFile && !isImgFile){ alert('Please choose an image or PDF file.'); return; }
+  if(file.size > 50*1024*1024 && !confirm('This file is '+(file.size/1048576).toFixed(1)+' MB. Uploads over ~50 MB may be rejected by Supabase. Try anyway?')) return;
+  var ext=isPdfFile?'.pdf':((file.name.match(/\.(png|jpe?g|gif|webp|bmp|svg)$/i)||['.png'])[0].toLowerCase());
+  var base=file.name.replace(/\.[^.]+$/,'').replace(/[^a-zA-Z0-9-_]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)||'file';
+  var nextV=(r.current_v||1)+1;
+  var path=base+'-v'+nextV+'-'+Date.now()+ext;
+  var ctype=file.type||(isPdfFile?'application/pdf':'application/octet-stream');
+  try{
+    var up=await fetch(CFG.url+'/storage/v1/object/'+BUCKET+'/'+path,{method:'POST',headers:{apikey:CFG.key,Authorization:'Bearer '+CFG.key,'Content-Type':ctype,'x-upsert':'true'},body:file});
+    if(!up.ok){ var t=await up.text(); throw new Error('storage '+up.status+' '+t.slice(0,140)); }
+    var newUrl=CFG.url+'/storage/v1/object/public/'+BUCKET+'/'+path;
+    // Make sure v1 (the original) is recorded before we add the new version.
+    var have=await fetch(CFG.url+'/rest/v1/review_versions?review_id=eq.'+id+'&select=v',{headers:H}).then(function(x){return x.ok?x.json():[];});
+    if(!have.length){
+      var v1={review_id:id, v:1, url:r.url, status:r.status||'in_review', created_by:r.created_by||'Team'};
+      var r1=await fetch(CFG.url+'/rest/v1/review_versions',{method:'POST',headers:Object.assign({'Content-Type':'application/json',Prefer:'return=minimal'},H),body:JSON.stringify([v1])});
+      if(!r1.ok){ var e1=await r1.text(); throw new Error('v1 save '+r1.status+' '+e1.slice(0,120)); }
+    }
+    var vnew={review_id:id, v:nextV, url:newUrl, status:'in_review', created_by:'Team'};
+    var rn=await fetch(CFG.url+'/rest/v1/review_versions',{method:'POST',headers:Object.assign({'Content-Type':'application/json',Prefer:'return=minimal'},H),body:JSON.stringify([vnew])});
+    if(!rn.ok){ var en=await rn.text(); throw new Error('version save '+rn.status+' '+en.slice(0,120)); }
+    // Point the card at the new version: fresh URL, fresh comment thread, fresh status.
+    var pr=await patchReview(id,{url:newUrl, project:newUrl, current_v:nextV, status:'in_review'});
+    if(!pr.ok) throw new Error('review update '+pr.status);
+    load();
+    alert('Uploaded version '+nextV+' of “'+(r.name||'this review')+'”. It’s now the current version with a fresh review; the previous version and its notes are kept — toggle between them inside the review.');
+  }catch(e){
+    alert('New-version upload failed: '+e.message+'\n\nIf this is your first version, run versioning-setup.sql in Supabase to create the review_versions table.');
+  }
+}
+function createReview(){
+  $('nerr').textContent='';
+  var raw=($('nurl').value||'').trim();
+  if(!raw){ $('nerr').textContent='Paste a link, or use “Upload a PDF or image”.'; return; }
+  if(!/^https?:\/\//i.test(raw)) raw='https://'+raw;
+  var u; try{ u=new URL(raw); }catch(e){ $('nerr').textContent='That doesn’t look like a valid URL.'; return; }
+  var body={ url:u.href, name:($('nname').value||'').trim()||null, project: (isVideo(u.href)||isPdf(u.href)||isDecision(u.href)||isImage(u.href))?u.href:u.hostname, created_by:'Team' };
+  insertReview(body).then(finishNew)
+    .catch(function(e){ $('nerr').textContent='Could not save ('+e.message+'). Did you run the reviews-table SQL?'; });
+}
+var _p=new URLSearchParams(location.search);
+if(_p.get('collection')) COLL_FILTER=_p.get('collection');
+if(_p.get('item')) FB_ITEM=_p.get('item');
+updateAdminBtn();
+load();
+setLens(_p.get('lens')==='feedback'?'feedback':'items', !!FB_ITEM);
+setInterval(function(){ if(!EDITING) load(); }, 20000);
+</script>
+</body>
+</html>

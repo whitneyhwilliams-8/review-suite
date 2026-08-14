@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overlay self-test (mock page)</title>
+<style>
+  body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;color:#282e2a}
+  nav{display:flex;gap:24px;align-items:center;padding:18px 40px;border-bottom:1px solid #eee;position:sticky;top:0;background:#fff;z-index:5}
+  nav b{font-size:20px}
+  .hero{padding:80px 40px}
+  h1{font-size:56px;margin:0 0 20px;max-width:760px;line-height:1.05}
+  p.lead{font-size:18px;max-width:620px;color:#454f48}
+  .btn{display:inline-block;margin-top:24px;background:#282e2a;color:#fff;padding:12px 22px;border-radius:24px;text-decoration:none}
+  section{padding:60px 40px;border-top:1px solid #eceee8}
+  h2{font-size:34px}
+  .grid{display:flex;gap:24px;flex-wrap:wrap;margin-top:24px}
+  .card{flex:1 1 240px;background:#f1f0ea;border-radius:12px;padding:24px}
+  img{max-width:320px;border-radius:12px;display:block;margin-top:20px}
+  .spacer{height:400px}
+</style>
+</head>
+<body>
+  <nav><b>Acme</b><a href="#a">What We Do</a><a href="#b">About</a><a href="#c">Resources</a></nav>
+  <div class="hero">
+    <h1 id="hh">We design learning that works at any scale</h1>
+    <p class="lead" id="lead">Acme is a sample site used only to test the review overlay locally.</p>
+    <a class="btn" id="cta" href="#">Explore Solutions</a>
+  </div>
+  <section id="a">
+    <h2>What sets us apart</h2>
+    <div class="grid">
+      <div class="card"><h3>Strategy</h3><p>Adapt to your unique organizational structure, pace, and priorities.</p></div>
+      <div class="card"><h3>Design</h3><p>Learner-first experiences that foster engagement and drive impact.</p></div>
+      <div class="card"><h3>Scale</h3><p>Grow without losing quality across hundreds of programs.</p></div>
+    </div>
+    <img id="img1" src="https://placehold.co/320x180/0a2540/fff?text=Sample+Image" alt="sample">
+  </section>
+  <section id="b"><h2>Common challenges we solve</h2><p>Low engagement, content that doesn't stick, scaling without losing quality.</p></section>
+  <div class="spacer"></div>
+  <section id="c"><h2>Footer area</h2><p id="foot">© 2026 Acme</p></div></section>
+
+<script>
+  // local-only mode (no IDR_CONFIG) — mimics the bookmarklet's script injection
+  window.IDR_CONFIG = { project: 'selftest' };
+</script>
+<script src="./review-overlay.js"></script>
+</body>
+</html>

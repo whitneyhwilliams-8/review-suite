@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site Reviewer — Get the Comment Button</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--bg:#303d38;--surf:#252425;--surf2:#302f2c;--field:#2b2a27;--line:rgba(194,152,61,.16);--primary:#a67f2f;--primary2:#c2983d;--green:#6FEEAC;--text:#eceee8;--muted:#928a74}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Lato',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--text);background:var(--bg)}
+  header{background:linear-gradient(135deg,#252425,#302f2c);color:#fff;padding:20px 28px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line)}
+  header .dot{width:16px;height:16px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 3px rgba(194,152,61,.28)}
+  header h1{font-size:18px;margin:0;font-weight:900}
+  .wrap{max-width:760px;margin:0 auto;padding:26px 22px 80px}
+  .card{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-bottom:20px}
+  h2{font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:8px;color:#fff;font-weight:900}
+  .sub{color:var(--muted);font-size:14px;margin:2px 0 14px;line-height:1.55}
+  .sub b{color:var(--text)}
+  .bm{display:inline-block;background:var(--primary);color:#252425 !important;text-decoration:none;padding:13px 24px;border-radius:28px;font-weight:700;font-size:16px;box-shadow:0 6px 18px rgba(194,152,61,.4);cursor:grab}
+  .bm:active{cursor:grabbing}
+  .or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;font-weight:700;margin:18px 0;text-transform:uppercase;letter-spacing:.06em}
+  .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+  code,.codebox{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+  code{background:rgba(194,152,61,.10);padding:1px 6px;border-radius:5px;color:#c2ccc5}
+  .codebox{display:block;width:100%;background:var(--field);color:#d9b25a;border:1px solid var(--line);border-radius:10px;padding:12px 14px;white-space:nowrap;overflow-x:auto}
+  .btn{background:var(--primary);color:#252425;border:none;border-radius:9px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer}
+  .btn:hover{background:var(--primary2)}
+  .btn.ghost{background:transparent;color:var(--text);border:1.5px solid var(--line)}
+  ol{margin:8px 0 0;padding-left:20px;line-height:1.7;font-size:14px;color:var(--muted)}
+  ol b{color:var(--text)}
+  .step{width:24px;height:24px;border-radius:50%;background:var(--primary);color:#252425;font-size:13px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+  .ok{color:var(--green);font-size:13px;font-weight:700}
+  .note{font-size:12.5px;color:var(--muted);margin-top:10px}
+  a.link{color:var(--primary2);font-weight:700}
+</style>
+</head>
+<body>
+<header><span class="dot"></span><h1>Site Reviewer</h1></header>
+<div class="wrap">
+
+  <div class="card">
+    <h2><span class="step">1</span> Add the button (one time)</h2>
+    <div class="sub"><b>Easiest:</b> drag this button up to your bookmarks bar. (Show the bar with <code>⌘⇧B</code> on Mac / <code>Ctrl⇧B</code> on Windows.)</div>
+    <p><a class="bm" id="bm" href="#">Add a comment</a></p>
+
+    <div class="or">or paste it</div>
+    <div class="sub">If dragging won't work, create a new bookmark and paste this as its <b>URL / Address</b>:</div>
+    <code class="codebox" id="code"></code>
+    <p style="margin-top:10px"><button class="btn" onclick="copyCode()">Copy code</button> <span class="ok" id="copied"></span></p>
+    <ol>
+      <li><b>Chrome/Edge:</b> ⋮ menu → Bookmarks → <b>Bookmark manager</b> → ⋮ → <b>Add new bookmark</b>. Name it "Add a comment", paste the code into <b>URL</b>, Save.</li>
+      <li><b>Safari:</b> Bookmarks → Add Bookmark on any page, then Edit Bookmarks and replace its address with the pasted code.</li>
+    </ol>
+    <div class="note">The button works on <b>any site</b> — each site's comments are kept separate automatically.</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">2</span> Use it on the site you're reviewing</h2>
+    <ol>
+      <li>Open the site you were asked to review.</li>
+      <li>Click the <b>Add a comment</b> bookmark. A panel opens top-right.</li>
+      <li>Enter your <b>email</b> → <b>+ Add comment</b> → click any text or section → type your note.</li>
+      <li>Reply to others and mark items resolved. Everyone's comments sync live.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">3</span> See all feedback</h2>
+    <div class="sub">Team view of every comment, grouped by site and page:</div>
+    <p><a class="link" href="./dashboard.html">→ Open the feedback dashboard</a></p>
+  </div>
+
+</div>
+
+<script src="config.js"></script>
+<script>
+// Universal bookmarklet: no project set -> overlay auto-scopes to each site's domain.
+var CFG = {
+  url: window.APP.supabaseUrl,
+  key: window.APP.supabaseKey
+};
+var SCRIPT = window.APP.overlayUrl;
+var code = "javascript:(function(){window.IDR_CONFIG={url:'"+CFG.url+"',key:'"+CFG.key+"'};var d=document,s=d.createElement('script');s.src='"+SCRIPT+"?v='+Date.now();d.body.appendChild(s);})();";
+document.getElementById('bm').href = code;
+document.getElementById('code').textContent = code;
+function copyCode(){ navigator.clipboard.writeText(code).then(function(){ document.getElementById('copied').textContent='Copied ✓'; }); }
+</script>
+</body>
+</html>

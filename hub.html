@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hub | Review Studio</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--bg:#303d38;--surf:#252425;--surf2:#302f2c;--field:#2b2a27;--line:#46443d;--primary:#c2983d;--primary2:#d9b25a;--green:#81C784;--text:#eceee8;--muted:#928a74}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Lato',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:var(--bg)}
+  header{background:linear-gradient(135deg,#252425,#302f2c);color:#fff;padding:16px 28px;display:flex;flex-direction:column;align-items:stretch;gap:10px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+  header .dot{width:16px;height:16px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 3px rgba(194,152,61,.28)}
+  header h1{font-size:16px;margin:0;font-weight:900}
+  header .pill{background:rgba(194,152,61,.14);border-radius:20px;padding:3px 10px;font-size:11px;color:#c2ccc5}
+  header .spacer{flex:1}
+  .wrap{max-width:1000px;margin:0 auto;padding:22px 22px 90px}
+  .tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+  .tab{border:none;background:rgba(194,152,61,.08);color:var(--muted);border-radius:20px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer}
+  .tab.on{background:#eceee8;color:#303d38}
+  .card{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px}
+  h2{font-size:15px;margin:0 0 4px;color:#fff;font-weight:900}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 14px;line-height:1.5}
+  label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#c2ccc5;margin:10px 0 5px}
+  input,select{width:100%;background:var(--field);border:1px solid var(--line);border-radius:9px;padding:9px 11px;color:var(--text);font-size:14px;font-family:inherit}
+  input::placeholder{color:#6f6a5b}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>*{flex:1;min-width:150px}
+  .btn{background:var(--primary);color:#252425;border:none;border-radius:9px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer}
+  .btn:hover{background:var(--primary2)}
+  .btn.ghost{background:transparent;color:var(--text);border:1.5px solid var(--line)}
+  .btn.sm{padding:6px 11px;font-size:12px}
+  .btn.danger{background:transparent;color:#FF8A7A;border:1.5px solid rgba(255,138,122,.4)}
+  .item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .item:last-child{border-bottom:none}
+  .item .grow{flex:1;min-width:0}
+  .iname{font-weight:700;color:#fff;font-size:14px}
+  .imeta{font-size:12px;color:var(--muted);margin-top:2px}
+  .chip{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;background:#eceee8;color:#303d38;margin-left:6px}
+  .chip.part{background:#C8E6C9;color:#18551D}
+  .stage{display:flex;gap:8px;align-items:center;margin-top:8px}
+  .stage .pos{width:26px;height:26px;border-radius:50%;background:var(--primary);color:#252425;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none}
+  .stage input,.stage select{flex:1}
+  .stagelist{margin:10px 0}
+  .swrow{display:flex;gap:8px;align-items:center;font-size:13px;color:#c2ccc5;padding:5px 0}
+  .swrow .pos{width:22px;height:22px;border-radius:50%;background:rgba(194,152,61,.25);color:#cfa955;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;flex:none}
+  .muted{color:var(--muted);text-align:center;padding:24px;font-size:13px}
+  .htop{display:flex;align-items:center;gap:12px}
+  .topnav{display:flex;gap:24px}
+  .topnav a{font-size:14px;font-weight:700;color:#928a74;text-decoration:none;padding:4px 1px 3px;border-bottom:2px solid transparent}
+  .topnav a:hover{color:#fff}
+  .topnav a.on{color:#fff;border-bottom-color:var(--primary)}
+  /* workflow template builder */
+  .wstep{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0}
+  .wstep-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .wstep-h .pos{width:24px;height:24px;border-radius:50%;background:var(--primary);color:#252425;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none}
+  .wstep-h .lbl{font-weight:900;font-size:13px;color:#fff}
+  .wstep-h .rm{margin-left:auto}
+  .wperson{display:flex;gap:8px;align-items:center;margin:6px 0}
+  .wperson input{flex:1}
+  .wperson select{flex:none;width:120px}
+  .wperson .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:0 4px}
+  .wperson .x:hover{color:#FF8A7A}
+  .wgate{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:12px;font-weight:700;padding:6px 10px;border-radius:8px}
+  .wgate.flow{background:rgba(194,152,61,.08);color:#c2ccc5}
+  .wgate.wait{background:rgba(255,190,120,.14);color:#FFCE93}
+  .waddp{background:none;border:none;color:var(--primary2);font-weight:700;font-size:12px;cursor:pointer;padding:2px 0;margin-top:2px}
+  .stepconn{text-align:center;color:var(--muted);font-size:16px;line-height:1;margin:-2px 0}
+  .err{color:#FF8A7A;font-size:12.5px;margin-top:8px}
+  .notconn{display:flex;align-items:center;gap:12px}
+  .status-dot{width:10px;height:10px;border-radius:50%;background:#FF8A7A;flex:none}
+  .scrim{position:fixed;inset:0;background:rgba(28,27,28,.85);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .scrim.hidden{display:none}
+  .gate{width:360px;max-width:calc(100vw - 40px);background:var(--surf);border:1px solid var(--line);border-radius:18px;padding:26px 24px;box-shadow:0 30px 80px rgba(18,17,18,.7)}
+  .gate h2{font-size:18px;margin:0 0 6px}.gate p{font-size:13px;color:var(--muted);margin:0 0 12px}.gate .btn{width:100%;margin-top:6px}
+/* Studio design-system component signatures */
+  .btn,.btn.sm,.btn.on,.btn.ghost,.btn.red,.btn.danger{border-radius:24px}
+  .card,.newform{border-radius:0 16px 0 16px;border-color:#c2983d}
+  .card{background:linear-gradient(90deg,rgba(48,61,56,.95) 0%,rgba(48,61,56,.95) 100%);box-shadow:0 4px 16px rgba(28,27,28,.25)}
+  input,textarea,select{border-radius:10px}
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <span class="brandmark" style="font:700 15px/1 system-ui,-apple-system,sans-serif;color:#fff;letter-spacing:.3px"></span>
+    <span class="spacer"></span>
+    <span class="pill" id="ssoNote">SSO: coming (temp passcode)</span>
+  </div>
+  <nav class="topnav"><a href="./library.html">Review</a><a class="on" href="./hub.html">Settings</a></nav>
+</header>
+<div class="wrap">
+  <p style="color:var(--muted);font-size:14px;margin:2px 0 16px">Behind-the-scenes setup for the team (internal only). Build reusable <b>review workflows</b>, and organize media by <b>folder</b> and <b>partner</b>. Reviewers never see this page.</p>
+  <div class="tabs">
+    <button class="tab on" data-t="folders" onclick="show('folders')">Folders</button>
+    <button class="tab" data-t="workflows" onclick="show('workflows')">Workflows</button>
+    <button class="tab" data-t="partners" onclick="show('partners')">Partners</button>
+    <button class="tab" data-t="integrations" onclick="show('integrations')">Integrations</button>
+  </div>
+
+  <!-- FOLDERS -->
+  <div id="tab-folders">
+    <div class="card">
+      <h2>New folder</h2>
+      <div class="sub">Folders organize media by partner and carry a default workflow — every video dropped in inherits it.</div>
+      <div class="row">
+        <div><label>Folder name</label><input id="fName" placeholder="e.g. Q3 Promo Videos"></div>
+        <div><label>Parent folder</label><select id="fParent"></select></div>
+      </div>
+      <div class="row">
+        <div><label>Partner</label><select id="fPartner"></select></div>
+        <div><label>Default workflow</label><select id="fWorkflow"></select></div>
+      </div>
+      <div style="margin-top:12px"><button class="btn" onclick="createFolder()">Create folder</button></div>
+      <div class="err" id="fErr"></div>
+    </div>
+    <div class="card"><h2>Folders</h2><div id="folderList"><div class="muted">Loading…</div></div></div>
+  </div>
+
+  <!-- WORKFLOWS -->
+  <div id="tab-workflows" style="display:none">
+    <div class="card">
+      <h2>New workflow template</h2>
+      <div class="sub">A reusable template of ordered steps. Add people to each step as a <b>Reviewer</b> or an <b>Approver</b>. A step with an approver <b>waits</b> for their approval before advancing; a reviewers-only step <b>flows through</b>. Apply a template to any collection to run the review.</div>
+      <label>Template name</label><input id="wName" placeholder="e.g. Standard Partner Review">
+      <div id="stepList" style="margin:14px 0"></div>
+      <button class="btn ghost sm" onclick="addStep()">+ Add step</button>
+      <div style="margin-top:14px"><button class="btn" onclick="createWorkflow()">Save template</button></div>
+      <div class="err" id="wErr"></div>
+    </div>
+    <div class="card"><h2>Templates</h2><div id="workflowList"><div class="muted">Loading…</div></div></div>
+  </div>
+
+  <!-- PARTNERS -->
+  <div id="tab-partners" style="display:none">
+    <div class="card">
+      <h2>New partner</h2>
+      <div class="sub">Partner tags let you organize and (later) route Asana + notifications by partner.</div>
+      <div class="row"><div><label>Partner name</label><input id="pName" placeholder="e.g. Chegg"></div></div>
+      <div style="margin-top:12px"><button class="btn" onclick="createPartner()">Add partner</button></div>
+      <div class="err" id="pErr"></div>
+    </div>
+    <div class="card"><h2>Partners</h2><div id="partnerList"><div class="muted">Loading…</div></div></div>
+  </div>
+
+  <!-- INTEGRATIONS -->
+  <div id="tab-integrations" style="display:none">
+    <div class="card">
+      <h2>Asana</h2>
+      <div class="sub">Push review decisions (approved / changes requested) to the linked Asana task.</div>
+      <div class="notconn"><span class="status-dot"></span><b>Not connected</b><span class="imeta">— add a personal access token server-side to enable (coming with Krista).</span></div>
+      <div style="margin-top:12px"><button class="btn" disabled title="Available once the PAT is configured">Connect Asana</button></div>
+    </div>
+    <div class="card">
+      <h2>Google SSO</h2>
+      <div class="sub">Internal team signs in with their your Google account; external reviewers stay link-only.</div>
+      <div class="notconn"><span class="status-dot"></span><b>Not configured</b><span class="imeta">— using a temporary passcode until SSO is set up.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim">
+  <div class="gate">
+    <h2>Team sign-in</h2>
+    <p>Internal hub — enter the admin passcode. (Google SSO replaces this soon.)</p>
+    <input id="gPass" type="password" placeholder="Passcode" onkeydown="if(event.key==='Enter')unlock()">
+    <button class="btn" onclick="unlock()">Enter</button>
+    <div class="err" id="gErr"></div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+var CFG={url:window.APP.supabaseUrl,key:window.APP.supabaseKey};
+var H={apikey:CFG.key,Authorization:'Bearer '+CFG.key,'Content-Type':'application/json'};
+// Passcode gate. Default passcode is "changeme" (the hash below). Change it:
+// run  echo -n 'YOUR-PASSCODE' | shasum -a 256   and paste the hex here.
+// Set PASS_HASH='' to remove the gate entirely.
+var PASS_HASH='c4b446e77de6e6fa37697132c99a41a7aec9505193954e2c9c0746d81d709afb';
+var PARTNERS=[],WORKFLOWS=[],STAGES=[],FOLDERS=[];
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
+async function sha(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [].map.call(new Uint8Array(b),function(x){return x.toString(16).padStart(2,'0');}).join('');}
+async function unlock(){ var h=await sha($('gPass').value); if(!PASS_HASH || h===PASS_HASH){ sessionStorage.setItem('idr_hub','1'); $('scrim').classList.add('hidden'); loadAll(); } else $('gErr').textContent='Incorrect passcode.'; }
+function show(t){ ['folders','workflows','partners','integrations'].forEach(function(x){ $('tab-'+x).style.display=(x===t?'':'none'); }); [].forEach.call(document.querySelectorAll('.tab'),function(b){b.classList.toggle('on',b.dataset.t===t);}); }
+
+function api(path,opts){ return fetch(CFG.url+'/rest/v1/'+path,Object.assign({headers:H},opts||{})).then(function(r){ if(!r.ok) return r.text().then(function(t){throw new Error(r.status+' '+t);}); return r.status===204?null:r.json(); }); }
+function loadAll(){
+  Promise.all([
+    api('partners?select=*&order=name'),
+    api('workflows?select=*&order=created_at.desc'),
+    api('workflow_stages?select=*&order=position'),
+    api('folders?select=*&order=name')
+  ]).then(function(res){ PARTNERS=res[0]||[];WORKFLOWS=res[1]||[];STAGES=res[2]||[];FOLDERS=res[3]||[]; renderAll(); })
+   .catch(function(e){ document.querySelectorAll('#folderList,#workflowList,#partnerList').forEach(function(el){el.innerHTML='<div class="muted">Could not load ('+esc(e.message).slice(0,60)+'). Run <b>hub-setup.sql</b> first.</div>';}); });
+}
+function opt(v,label,sel){ return '<option value="'+esc(v)+'"'+(sel?' selected':'')+'>'+esc(label)+'</option>'; }
+function renderAll(){
+  // selects
+  $('fParent').innerHTML=opt('','— none (top level)')+FOLDERS.map(function(f){return opt(f.id,f.name);}).join('');
+  $('fPartner').innerHTML=opt('','— none')+PARTNERS.map(function(p){return opt(p.id,p.name);}).join('');
+  $('fWorkflow').innerHTML=opt('','— none')+WORKFLOWS.map(function(w){return opt(w.id,w.name);}).join('');
+  // partners
+  $('partnerList').innerHTML = PARTNERS.length? PARTNERS.map(function(p){ return '<div class="item"><div class="grow"><span class="iname">'+esc(p.name)+'</span></div><button class="btn danger sm" onclick="delRow(\'partners\',\''+p.id+'\')">Delete</button></div>'; }).join('') : '<div class="muted">No partners yet.</div>';
+  // workflows
+  $('workflowList').innerHTML = WORKFLOWS.length? WORKFLOWS.map(function(w){
+    var st=STAGES.filter(function(s){return s.workflow_id===w.id;}).sort(function(a,b){return a.position-b.position;});
+    var stg=st.map(function(s){
+      var ppl=[];
+      if(s.assignees) ppl.push(esc(s.assignees)+' <span class="imeta">(reviewer)</span>');
+      if(s.approvers) ppl.push('<b>'+esc(s.approvers)+'</b> <span class="imeta">(approver)</span>');
+      var gate=(s.waits?'waits':'flows');
+      return '<div class="swrow"><span class="pos">'+(s.position+1)+'</span><span>'+(ppl.join(' · ')||'<span class="imeta">no people</span>')+' <span class="chip">'+gate+'</span></span></div>';
+    }).join('') || '<div class="imeta">No steps.</div>';
+    return '<div class="item" style="align-items:flex-start"><div class="grow"><span class="iname">'+esc(w.name)+'</span>'+stg+'</div><button class="btn danger sm" onclick="delRow(\'workflows\',\''+w.id+'\')">Delete</button></div>';
+  }).join('') : '<div class="muted">No workflows yet.</div>';
+  // folders
+  $('folderList').innerHTML = FOLDERS.length? FOLDERS.map(function(f){
+    var par=FOLDERS.filter(function(x){return x.id===f.parent_id;})[0];
+    var pn=PARTNERS.filter(function(x){return x.id===f.partner_id;})[0];
+    var wf=WORKFLOWS.filter(function(x){return x.id===f.workflow_id;})[0];
+    return '<div class="item"><div class="grow"><span class="iname">'+(par?esc(par.name)+' / ':'')+esc(f.name)+'</span>'
+      +(pn?'<span class="chip part">'+esc(pn.name)+'</span>':'')
+      +(wf?'<span class="chip">'+esc(wf.name)+'</span>':'<span class="imeta"> · no workflow</span>')
+      +'</div><button class="btn danger sm" onclick="delRow(\'folders\',\''+f.id+'\')">Delete</button></div>';
+  }).join('') : '<div class="muted">No folders yet.</div>';
+}
+function delRow(table,id){ if(!confirm('Delete this '+table.slice(0,-1)+'?'))return; api(table+'?id=eq.'+id,{method:'DELETE'}).then(loadAll); }
+
+function createPartner(){ var n=$('pName').value.trim(); if(!n){$('pErr').textContent='Enter a name.';return;} api('partners',{method:'POST',headers:Object.assign({Prefer:'return=minimal'},H),body:JSON.stringify([{name:n}])}).then(function(){$('pName').value='';$('pErr').textContent='';loadAll();}).catch(function(e){$('pErr').textContent=e.message;}); }
+function createFolder(){ var n=$('fName').value.trim(); if(!n){$('fErr').textContent='Enter a name.';return;}
+  var body={name:n,parent_id:$('fParent').value||null,partner_id:$('fPartner').value||null,workflow_id:$('fWorkflow').value||null};
+  api('folders',{method:'POST',headers:Object.assign({Prefer:'return=minimal'},H),body:JSON.stringify([body])}).then(function(){$('fName').value='';$('fErr').textContent='';loadAll();}).catch(function(e){$('fErr').textContent=e.message;});
+}
+// --- template builder (PageProof-style steps) ---
+function addStep(seed){
+  var wrap=document.createElement('div'); wrap.className='wstep';
+  wrap.innerHTML='<div class="wstep-h"><span class="pos"></span><span class="lbl"></span>'
+    +'<button class="btn danger sm rm" onclick="this.closest(\'.wstep\').remove();renumberSteps();">Remove</button></div>'
+    +'<div class="people"></div>'
+    +'<button class="waddp" onclick="addPerson(this.closest(\'.wstep\'))">+ add person</button>'
+    +'<div class="wgate"></div>';
+  $('stepList').appendChild(wrap);
+  var ppl=(seed&&seed.people&&seed.people.length)?seed.people:[{email:'',role:'reviewer'}];
+  ppl.forEach(function(p){ addPerson(wrap,p.email,p.role); });
+  renumberSteps();
+  return wrap;
+}
+function addPerson(stepEl,email,role){
+  var row=document.createElement('div'); row.className='wperson';
+  row.innerHTML='<input class="p-email" type="email" placeholder="name@email.com" value="'+esc(email||'')+'">'
+    +'<select class="p-role" onchange="updateGate(this.closest(\'.wstep\'))"><option value="reviewer"'+(role!=='approver'?' selected':'')+'>Reviewer</option><option value="approver"'+(role==='approver'?' selected':'')+'>Approver</option></select>'
+    +'<button class="x" title="Remove person" onclick="var s=this.closest(\'.wstep\');this.closest(\'.wperson\').remove();updateGate(s);">×</button>';
+  stepEl.querySelector('.people').appendChild(row);
+  updateGate(stepEl);
+}
+function updateGate(stepEl){
+  if(!stepEl) return;
+  var roles=[].map.call(stepEl.querySelectorAll('.p-role'),function(s){return s.value;});
+  var waits=roles.indexOf('approver')>=0;
+  var g=stepEl.querySelector('.wgate');
+  g.className='wgate '+(waits?'wait':'flow');
+  g.textContent=waits?'This step waits for the approver to approve.':'This step flows through without waiting.';
+}
+function renumberSteps(){
+  var steps=[].slice.call(document.querySelectorAll('#stepList .wstep'));
+  steps.forEach(function(s,i){ s.querySelector('.pos').textContent=(i+1); s.querySelector('.lbl').textContent=(steps.length>1&&i===steps.length-1?'Final step':'Step '+(i+1)); });
+}
+function createWorkflow(){
+  var n=$('wName').value.trim(); if(!n){$('wErr').textContent='Enter a template name.';return;}
+  var steps=[].slice.call(document.querySelectorAll('#stepList .wstep'));
+  if(!steps.length){$('wErr').textContent='Add at least one step.';return;}
+  var stageData=steps.map(function(st,i){
+    var reviewers=[],approvers=[];
+    [].forEach.call(st.querySelectorAll('.wperson'),function(row){
+      var em=row.querySelector('.p-email').value.trim(); if(!em) return;
+      (row.querySelector('.p-role').value==='approver'?approvers:reviewers).push(em);
+    });
+    return {position:i,name:(steps.length>1&&i===steps.length-1?'Final step':'Step '+(i+1)),assignees:reviewers.join(', ')||null,approvers:approvers.join(', ')||null,waits:approvers.length>0,assignee_type:'external'};
+  });
+  if(stageData.every(function(s){return !s.assignees&&!s.approvers;})){$('wErr').textContent='Add at least one person (with an email) to a step.';return;}
+  api('workflows',{method:'POST',headers:Object.assign({Prefer:'return=representation'},H),body:JSON.stringify([{name:n}])}).then(function(w){
+    var wid=w[0].id; stageData.forEach(function(s){s.workflow_id=wid;});
+    return api('workflow_stages',{method:'POST',headers:Object.assign({Prefer:'return=minimal'},H),body:JSON.stringify(stageData)});
+  }).then(function(){ $('wName').value=''; $('stepList').innerHTML=''; addStep({people:[{role:'reviewer'}]}); $('wErr').textContent=''; loadAll(); })
+    .catch(function(e){$('wErr').textContent=e.message+' — if it mentions “approvers”/“waits”, run workflow-upgrade.sql.';});
+}
+
+// boot
+if(sessionStorage.getItem('idr_hub')==='1'){ $('scrim').classList.add('hidden'); loadAll(); }
+// seed a starter template shape: two reviewer steps + a final approver step
+addStep({people:[{role:'reviewer'}]}); addStep({people:[{role:'reviewer'}]}); addStep({people:[{role:'approver'}]});
+</script>
+</body>
+</html>
