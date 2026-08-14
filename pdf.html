@@ -204,7 +204,7 @@ var scale=1, zoomMode='width';          // 'width' | 'page' | 'custom'
 var NATIVE=false, BLOB=null;            // native-reader fallback state
 var COMMENTING=false, pendingAnchor=null;
 var DPR=Math.min(window.devicePixelRatio||1, 2);
-var ZMIN=0.25, ZMAX=6;
+var ZMIN=0.02, ZMAX=6;   // floor must stay tiny so fit-width works for large-format art (banners/backdrops)
 
 async function loadPdf(){
   var host=$('pages');
