@@ -38,6 +38,28 @@ create policy "review anon insert" on public.review_comments for insert with che
 create policy "review anon update" on public.review_comments for update using (true) with check (true);
 create policy "review anon delete" on public.review_comments for delete using (true);
 
+-- 1b) Reviews table ----------------------------------------------------------
+-- Every library card is a "review": an uploaded image/PDF or a pasted
+-- video/website link. It is referenced by collection_items and review_versions
+-- and altered by the tags/versioning sections below, so it MUST exist first.
+-- (project = the stable per-item key that comments are scoped to.)
+create table if not exists public.reviews (
+  id         uuid primary key default gen_random_uuid(),
+  project    text        not null,
+  name       text,
+  url        text,
+  status     text        not null default 'in_review',   -- in_review | approved | changes
+  archived   boolean     not null default false,
+  created_by text,
+  created_at timestamptz not null default now()
+);
+create index if not exists reviews_project_idx on public.reviews (project);
+
+alter table public.reviews enable row level security;
+drop policy if exists "reviews anon all" on public.reviews;
+create policy "reviews anon all" on public.reviews
+  for all to anon, authenticated using (true) with check (true);
+
 -- 3) Public bucket to host the overlay script --------------------------------
 -- (Optional but recommended: keeps hosting + storage in one place.)
 -- After running this, go to Storage ▸ review ▸ upload  review-overlay.js
