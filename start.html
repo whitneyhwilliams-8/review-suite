@@ -3,28 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Review Studio — Setup & Dashboard</title>
+<title>WW Review — Setup & Dashboard</title>
 <style>
-  :root{--navy:#282e2a;--red:#e8482b;--blue:#c2983d;--ink:#454f48;--line:#d8dad0;--bg:#f1f0ea}
+  :root{--navy:#0f172a;--red:#dc2626;--blue:#4f7a61;--ink:#1f2937;--line:#e2e6ea;--bg:#f5f6f8}
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--navy);background:var(--bg)}
-  header{background:var(--navy);color:#fff;padding:22px 32px;display:flex;align-items:center;gap:12px}
+  header{background:var(--navy);color:var(--heading);padding:22px 32px;display:flex;align-items:center;gap:12px}
   header .dot{width:20px;height:20px;border-radius:50%;background:conic-gradient(var(--red),var(--blue),var(--navy))}
   header h1{font-size:19px;margin:0;font-weight:700}
   .wrap{max-width:1000px;margin:0 auto;padding:28px 24px 80px}
   .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:22px}
   h2{font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
-  .step{width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;font-size:13px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+  .step{width:24px;height:24px;border-radius:50%;background:var(--navy);color:var(--heading);font-size:13px;display:inline-flex;align-items:center;justify-content:center;flex:none}
   .sub{color:var(--ink);font-size:13.5px;margin:2px 0 16px;line-height:1.5}
   label{display:block;font-size:12px;font-weight:700;color:var(--ink);margin:12px 0 5px;text-transform:uppercase;letter-spacing:.03em}
   input[type=text]{width:100%;border:1px solid #c2ccc5;border-radius:9px;padding:10px 12px;font-size:14px;font-family:inherit}
   input:focus{outline:none;border-color:var(--blue)}
   .row{display:flex;gap:16px;flex-wrap:wrap}
   .row>div{flex:1 1 280px}
-  .hint{font-size:12px;color:#928a74;margin-top:4px}
-  .bm{display:inline-block;background:var(--red);color:#fff !important;text-decoration:none;padding:12px 22px;border-radius:26px;font-weight:700;font-size:15px;box-shadow:0 6px 18px rgba(232,72,43,.35);cursor:grab}
+  .hint{font-size:12px;color:var(--muted);margin-top:4px}
+  .bm{display:inline-block;background:var(--red);color:var(--heading) !important;text-decoration:none;padding:12px 22px;border-radius:26px;font-weight:700;font-size:15px;box-shadow:0 6px 18px rgba(232,72,43,.35);cursor:grab}
   .bm:active{cursor:grabbing}
-  .btn{background:var(--navy);color:#fff;border:none;border-radius:9px;padding:10px 16px;font-weight:700;font-size:13px;cursor:pointer}
+  .btn{background:var(--navy);color:var(--heading);border:none;border-radius:9px;padding:10px 16px;font-weight:700;font-size:13px;cursor:pointer}
   .btn.ghost{background:#eceee8;color:var(--ink)}
   .btn.red{background:var(--red)}
   .pill{display:inline-block;background:#eceee8;border-radius:20px;padding:3px 10px;font-size:12px;color:var(--ink);margin-left:6px}
@@ -34,7 +34,7 @@
   .status{font-size:12.5px;margin-top:10px}
   .ok{color:#2fa36b}.warn{color:#c47b00}.err{color:var(--red)}
   table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
-  th{text-align:left;color:#928a74;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:2px solid var(--line)}
+  th{text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:2px solid var(--line)}
   td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
   tr.done td{opacity:.55}
   .tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
@@ -42,13 +42,13 @@
   .tag.res{background:#e3f4ec;color:#2fa36b}
   .filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 4px}
   .tab{border:none;background:#eceee8;color:var(--ink);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer}
-  .tab.on{background:var(--navy);color:#fff}
-  .muted{color:#928a74;font-size:13px;padding:20px 4px;text-align:center}
+  .tab.on{background:var(--navy);color:var(--heading)}
+  .muted{color:var(--muted);font-size:13px;padding:20px 4px;text-align:center}
   .grp{font-weight:700;font-size:13px;color:var(--navy);margin:16px 0 2px;padding-top:8px}
 </style>
 </head>
 <body>
-<header><span class="dot"></span><h1>Review Studio</h1><span class="pill">setup &amp; dashboard</span></header>
+<header><span class="dot"></span><h1>WW Review</h1><span class="pill">setup &amp; dashboard</span></header>
 <div class="wrap">
 
   <div class="card">
@@ -165,9 +165,9 @@ function render(){
       html+='<tr class="'+(c.resolved?'done':'')+'">'
         +'<td><span class="tag '+(c.resolved?'res':'open')+'">'+(c.resolved?'Resolved':'Open')+'</span></td>'
         +'<td>'+esc(c.body)+repHtml+'</td>'
-        +'<td style="max-width:180px;color:#928a74">'+esc((c.anchor&&c.anchor.tx)||'—').slice(0,70)+'</td>'
+        +'<td style="max-width:180px;color:var(--muted)">'+esc((c.anchor&&c.anchor.tx)||'—').slice(0,70)+'</td>'
         +'<td>'+esc(c.author)+'</td>'
-        +'<td style="white-space:nowrap;color:#928a74">'+new Date(c.created_at).toLocaleString()+'</td></tr>';
+        +'<td style="white-space:nowrap;color:var(--muted)">'+new Date(c.created_at).toLocaleString()+'</td></tr>';
     });
     html+='</tbody></table>';
   });

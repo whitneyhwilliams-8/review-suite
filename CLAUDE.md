@@ -41,18 +41,27 @@ All iDesign branding and secrets have been removed. Treat it as a clean template
 
 ## Theme / branding
 
-- Colors live per-file in each page's `<style>` via a `:root` variable block
-  (`--bg`, `--surf`, `--surf2`, `--field`, `--line`, `--primary`, `--primary2`,
-  `--text`, `--muted`, `--green`). There is **no** central theme file. Two `:root`
-  variants exist — the standard one and the one in `generate.html`/`install.html`
-  — keep them in sync if you recolor.
-- Current palette: page background **Forest #303d38** (`--bg`), panels/cards +
-  header bar **Charcoal #252425** (`--surf`), primary accent **Mustard #c2983d**,
-  body text warm near-white **#eceee8**, muted text **Mushroom #928a74**. Text on
-  mustard buttons is dark gray **#252425**. Semantic status colors are intentionally
-  kept: green = resolved/approved, red/amber = open/changes-requested.
-- The brand name shown top-left comes from `config.js` `brand.name` (default
-  "Review Studio"), rendered into any `.brandmark` element by config.js on load.
+- **Light, minimal theme** (converted from the original dark forest/mustard look).
+  Colors live per-file in each page's `<style>` via a `:root` variable block; there
+  is **no** central theme file, but the token values are kept identical across files.
+- Tokens: `--bg` page bg **#f5f6f8**, `--surf` cards/header **#ffffff**, `--surf2`
+  **#eef1f4**, `--field` **#f7f8fa**, `--line` **#e2e6ea**, `--primary` accent
+  **Sage #4f7a61**, `--primary2` light sage **#6a9a80** (hover + links), `--green`
+  semantic success **#16a34a**, `--text` **#1f2937**, `--muted` **#6b7280**. Plus
+  three helper tokens added during the light conversion: **`--onPrimary`** (#ffffff —
+  text/icons that sit ON the accent), **`--heading`** (#0f172a — strong headings),
+  **`--stage`** (#e5e7eb — neutral bg behind the white PDF/image pages).
+- **To re-tint the accent:** change `--primary` / `--primary2` in every file's
+  `:root`. On-accent text uses `--onPrimary`, so it stays readable automatically.
+  Semantic status colors (green resolved/approved, amber/red changes/open) are kept.
+- `start.html` / `review-launch.html` use a *separate* token set (`--blue` = accent,
+  `--ink` / `--navy` = text, `--bg`). Retint those there.
+- The brand name shown top-left comes from `config.js` `brand.name` (currently
+  **"WW Review"**), rendered into any `.brandmark` element by config.js on load.
+- **Tagging is currently disabled in `library.html`** (search `tagging disabled for
+  now`): the Filter-by-tag sidebar, the per-item **Tags** button, item tag chips, and
+  the collection **Tag items** button are commented out. The tag DB columns and the
+  tag-editor modal/JS remain — re-enable by uncommenting those four spots.
 
 ## Gotchas
 

@@ -21,12 +21,12 @@ window.APP = {
 
   // 4) Cosmetic — the name shown in the top-left of every page.
   brand: {
-    name: 'Whack Review'
+    name: 'WW Review'
   }
 };
 
 // Fill any element with class="brandmark" with the brand name (replaces the old logo image).
 document.addEventListener('DOMContentLoaded', function () {
-  var n = (window.APP && window.APP.brand && window.APP.brand.name) || 'Review Studio';
+  var n = (window.APP && window.APP.brand && window.APP.brand.name) || 'WW Review';
   Array.prototype.forEach.call(document.querySelectorAll('.brandmark'), function (el) { el.textContent = n; });
 });
