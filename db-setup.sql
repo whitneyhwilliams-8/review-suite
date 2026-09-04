@@ -223,6 +223,7 @@ end $$;
 
 alter table public.collections add column if not exists partner   text;
 alter table public.collections add column if not exists file_type text;
+alter table public.collections add column if not exists logo_url  text;   -- per-collection partner logo shown to reviewers
 
 
 -- ####################################################################

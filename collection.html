@@ -15,8 +15,14 @@
   header .who{margin-left:auto;font-size:12px;color:var(--muted);display:flex;gap:10px;align-items:center}
   .link{background:none;border:none;color:var(--primary2);cursor:pointer;font-size:12px;font-weight:700}
   .wrap{max-width:960px;margin:0 auto;padding:26px 24px 90px}
-  .cname{font-size:24px;font-weight:900;color:var(--heading);margin:0 0 4px}
-  .lead{color:var(--muted);font-size:14px;margin:0 0 20px}
+  .cname{font-size:24px;font-weight:900;color:var(--heading);margin:0}
+  .lead{color:var(--muted);font-size:14px;margin:4px 0 0}
+  .chead{display:flex;align-items:center;gap:16px;margin:0 0 20px;flex-wrap:wrap}
+  .clogo{max-height:56px;max-width:180px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:10px;padding:5px 8px}
+  .owner{margin-top:36px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;line-height:1.7}
+  .owner b{color:var(--heading);font-weight:800;font-size:13.5px}
+  .owner a{color:var(--primary2);text-decoration:none;font-weight:700}
+  .owner a:hover{text-decoration:underline}
   .grid{display:flex;flex-direction:column;gap:12px}
   .card{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   .num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--primary);color:var(--onPrimary);font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center}
@@ -55,9 +61,15 @@
   <span class="who"><span id="whoName">—</span><button class="link" onclick="askIdentity()">change</button></span>
 </header>
 <div class="wrap">
-  <h2 class="cname" id="cname">Loading…</h2>
-  <p class="lead" id="lead"></p>
+  <div class="chead">
+    <img id="clogo" class="clogo" alt="" hidden>
+    <div>
+      <h2 class="cname" id="cname">Loading…</h2>
+      <p class="lead" id="lead"></p>
+    </div>
+  </div>
   <div class="grid" id="grid"><div class="muted">Loading…</div></div>
+  <footer class="owner" id="owner"></footer>
 </div>
 <div class="scrim" id="scrim">
   <div class="gate">
@@ -113,6 +125,8 @@ function load(){
     if(!coll){ $('cname').textContent='Collection not found'; $('grid').innerHTML='<div class="muted">This collection may have been deleted.</div>'; return; }
     document.title=coll.name+' | Review collection';
     $('cname').textContent=coll.name;
+    var lg=$('clogo');
+    if(coll.logo_url){ lg.src=coll.logo_url; lg.alt=(coll.partner||coll.name||'')+' logo'; lg.hidden=false; } else { lg.hidden=true; }
     var byId={}; all.forEach(function(r){byId[r.id]=r;});
     REVIEWS=items.map(function(m){return byId[m.review_id];}).filter(Boolean);
     $('lead').textContent=REVIEWS.length? ('Please review the '+REVIEWS.length+' item'+(REVIEWS.length>1?'s':'')+' below. Open each one, leave your comments, and come back for the next.') : 'This collection is empty.';
@@ -135,7 +149,16 @@ function render(){
       +'</div>';
   }).join('');
 }
+function renderOwner(){
+  var o=(window.APP&&window.APP.owner)||{}; var el=$('owner'); if(!el) return;
+  if(!o.name && !o.email && !o.site){ el.style.display='none'; return; }
+  var parts=[];
+  if(o.email) parts.push('<a href="mailto:'+esc(o.email)+'">'+esc(o.email)+'</a>');
+  if(o.site){ var href=/^https?:\/\//.test(o.site)?o.site:('https://'+o.site); parts.push('<a href="'+esc(href)+'" target="_blank" rel="noopener">'+esc(o.site)+'</a>'); }
+  el.innerHTML='Review prepared by <b>'+esc(o.name||'')+'</b>'+(parts.length?' &nbsp;·&nbsp; '+parts.join(' &nbsp;·&nbsp; '):'');
+}
 updateWho();
+renderOwner();
 if(!getEmail()) askIdentity();
 load();
 setInterval(load, 20000);

@@ -43,7 +43,7 @@
   .tchip b{color:var(--text);font-weight:700}
   .tchip.soon{opacity:.7;font-style:italic}
   /* cards */
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:28px;margin-top:14px}
+  #grid{display:flex;flex-direction:column;gap:22px;margin-top:14px}
   .card{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s,transform .15s}
   .card:hover{border-color:rgba(79,122,97,.5);transform:translateY(-2px)}
   .ctop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
@@ -201,6 +201,7 @@
     <button class="btn" onclick="toggleNew()">+ New review</button>
     <input type="file" id="newfile" accept="application/pdf,.pdf,image/png,image/jpeg,image/gif,image/webp,image/svg+xml,.png,.jpg,.jpeg,.gif,.webp,.svg" style="display:none" onchange="uploadFile(this.files[0]); this.value='';">
     <input type="file" id="verfile" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,application/pdf,.png,.jpg,.jpeg,.gif,.webp,.svg,.pdf" style="display:none" onchange="uploadNewVersion(this.files[0]); this.value='';">
+    <input type="file" id="collLogoFile" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,.png,.jpg,.jpeg,.gif,.webp,.svg" style="display:none" onchange="uploadCollLogo(this.files[0]); this.value='';">
   </div>
   <nav class="topnav"><a class="on" href="./library.html">Review</a><a href="./hub.html">Settings</a></nav>
 </header>
@@ -241,6 +242,7 @@
     <div class="snav">Filter by tag</div>
     <div class="colls tagbar" id="tagbar"></div>
     -->
+    <!-- "How this works" removed
     <details class="howto-d">
       <summary>How this works<span class="cv">▾</span></summary>
       <div class="howto-steps">
@@ -249,6 +251,7 @@
         <div class="hstep"><span class="n">3</span><span><b>Collect &amp; decide</b><span class="d">Reply &amp; resolve in Feedback.</span></span></div>
       </div>
     </details>
+    -->
     <a class="setlink" href="./hub.html">Settings</a>
   </aside>
 
@@ -374,6 +377,7 @@ function renderColls(){
       +esc(c.name)+' <span class="n">('+collSize(c.id)+')</span>'
       +'<span class="cog" onclick="event.stopPropagation()">'
         +'<button class="mini" title="Copy reviewer link" onclick="shareCollection(\''+c.id+'\')">Copy link</button>'
+        +'<button class="mini" title="Set the partner logo shown to reviewers" onclick="pickCollLogo(\''+c.id+'\')">Logo</button>'
         /* tagging disabled for now: +'<button class="mini" title="Tag every item in this collection" onclick="openCollTags(\''+c.id+'\')">Tag items</button>' */
         +'<button class="mini" title="Rename" onclick="renameCollection(\''+c.id+'\')">Rename</button>'
         +(ADMIN?'<button class="mini" title="Delete collection" onclick="delCollection(\''+c.id+'\')">Delete</button>':'')
@@ -735,6 +739,27 @@ async function uploadFile(file){
 // (empty) comment thread; the prior version + its notes stay for reference.
 var versionTarget=null;
 function pickNewVersion(id){ versionTarget=id; $('verfile').click(); }
+// ---- per-collection partner logo (shown to reviewers on the collection page) ----
+var collLogoTarget=null;
+function pickCollLogo(id){ collLogoTarget=id; $('collLogoFile').click(); }
+async function uploadCollLogo(file){
+  var id=collLogoTarget; collLogoTarget=null; if(!file||!id) return;
+  if(!/^image\//i.test(file.type) && !/\.(png|jpe?g|gif|webp|svg)$/i.test(file.name)){ alert('Choose an image file (PNG, JPG, SVG, WebP, GIF).'); return; }
+  var ext=(file.name.match(/\.(png|jpe?g|gif|webp|svg)$/i)||['.png'])[0].toLowerCase();
+  var ctype=file.type||({'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.gif':'image/gif','.webp':'image/webp','.svg':'image/svg+xml'})[ext]||'image/png';
+  var path='logos/collection-'+id+'-'+Date.now()+ext;
+  try{
+    var up=await fetch(CFG.url+'/storage/v1/object/'+BUCKET+'/'+path,{method:'POST',headers:{apikey:CFG.key,Authorization:'Bearer '+CFG.key,'Content-Type':ctype,'x-upsert':'true'},body:file});
+    if(!up.ok){ var t=await up.text(); throw new Error('storage '+up.status+' '+t.slice(0,120)); }
+    var publicUrl=CFG.url+'/storage/v1/object/public/'+BUCKET+'/'+path;
+    var pr=await fetch(CFG.url+'/rest/v1/collections?id=eq.'+id,{method:'PATCH',headers:Object.assign({'Content-Type':'application/json'},H),body:JSON.stringify({logo_url:publicUrl})});
+    if(!pr.ok){ var e2=await pr.text(); throw new Error(pr.status+' '+e2.slice(0,120)); }
+    load();
+    alert('Logo saved — it now shows on this collection’s shared reviewer page.');
+  }catch(e){
+    alert('Could not set logo: '+e.message+(/(400|PGRST|column)/i.test(e.message)?'\n\nIf this mentions logo_url, run in Supabase:\nalter table public.collections add column if not exists logo_url text;':''));
+  }
+}
 async function uploadNewVersion(file){
   var id=versionTarget; versionTarget=null;
   if(!file || !id) return;

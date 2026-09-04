@@ -22,6 +22,14 @@ window.APP = {
   // 4) Cosmetic — the name shown in the top-left of every page.
   brand: {
     name: 'WW Review'
+  },
+
+  // 5) Your details — shown to reviewers on shared collection pages so they know
+  //    who sent the review and how to reach you.
+  owner: {
+    name: 'Whitney Williams',
+    email: 'whitneyhackwilliams@gmail.com',
+    site: 'www.whitneyhack.com'
   }
 };
 
